@@ -77,7 +77,13 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
 
     TTree* tree;
 
-    std::map< std::string, std::unique_ptr< float > > single_vars;
+    std::map< std::string, std::unique_ptr< float > > single_float_vars;
+    std::map< std::string, std::unique_ptr< int > >   single_int_vars;
+
+    // ----------member functions ---------------------------
+    void InitSingleVar(std::string name, std::string type);
+    void FillSingleVar(std::string name, float value);
+    void FillSingleVar(std::string name, int value);
 };
 
 //
@@ -110,11 +116,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
 
     tree = fs->make< TTree >("MET_tree", "MET_tree");
 
-    single_vars.insert({"pt_pfmet_t1", std::unique_ptr< float >(new float(-999.0))});
-    single_vars.insert({"pt_pfmet_t1smear", std::unique_ptr< float >(new float(-999.0))});
-
-    tree->Branch("pt_pfmet_t1", single_vars["pt_pfmet_t1"].get(), "pt_pfmet_t1/F");
-    tree->Branch("pt_pfmet_t1smear", single_vars["pt_pfmet_t1smear"].get(), "pt_pfmet_t1smear/F");
+    InitSingleVar("pt_pfmet_t1", "F");
+    InitSingleVar("pt_pfmet_t1smear", "F");
 }
 
 METAnalyzer::~METAnalyzer()
@@ -147,8 +150,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
     h_ratio_pt_pfmet_t1smear_div_pfmet_t1->Fill(pfmet_t1smear_p4.pt() / pfmet_t1_p4.pt());
 
-    *single_vars["pt_pfmet_t1"]      = pfmet_t1_p4.pt();
-    *single_vars["pt_pfmet_t1smear"] = pfmet_t1smear_p4.pt();
+    FillSingleVar("pt_pfmet_t1", float(pfmet_t1_p4.pt()));
+    FillSingleVar("pt_pfmet_t1smear", float(pfmet_t1smear_p4.pt()));
 
     tree->Fill();
 }
@@ -174,6 +177,24 @@ void METAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
     // desc.addUntracked<edm::InputTag>("tracks","ctfWithMaterialTracks");
     // descriptions.addDefault(desc);
 }
+
+void METAnalyzer::InitSingleVar(std::string name, std::string type)
+{
+    if (type == "F") {
+        single_float_vars.insert({name, std::unique_ptr< float >(new float(-999.0))});
+        tree->Branch(name.c_str(), single_float_vars[name].get(), (name + "/F").c_str());
+    }
+    else if (type == "I") {
+        single_int_vars.insert({name, std::unique_ptr< int >(new int(-999.0))});
+        tree->Branch(name.c_str(), single_int_vars[name].get(), (name + "/I").c_str());
+    }
+    else {
+        std::cout << "currently only float (F) and int (I) types are supported at the moment" << std::endl;
+        throw std::exception();
+    }
+}
+void METAnalyzer::FillSingleVar(std::string name, float value) { *single_float_vars[name] = value; }
+void METAnalyzer::FillSingleVar(std::string name, int value) { *single_int_vars[name] = value; }
 
 // define this as a plug-in
 DEFINE_FWK_MODULE(METAnalyzer);
