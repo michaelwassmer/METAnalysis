@@ -34,6 +34,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "TTree.h"
+
 //
 // class declaration
 //
@@ -72,6 +74,10 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
 
     // ratios of different METs
     TH1D* h_ratio_pt_pfmet_t1smear_div_pfmet_t1;
+
+    TTree* tree;
+
+    std::map< std::string, std::unique_ptr< float > > single_vars;
 };
 
 //
@@ -101,6 +107,14 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
 
     h_ratio_pt_pfmet_t1smear_div_pfmet_t1 =
         fs->make< TH1D >("pt_pfmet_t1smear_div_pfmet_t1", "PFMET T1Smear/T1;p_{T,T1Smear}/p_{T,T1};arbitrary units", 40, 0., 2.);
+
+    tree = fs->make< TTree >("MET_tree", "MET_tree");
+
+    single_vars.insert({"pt_pfmet_t1", std::unique_ptr< float >(new float(-999.0))});
+    single_vars.insert({"pt_pfmet_t1smear", std::unique_ptr< float >(new float(-999.0))});
+
+    tree->Branch("pt_pfmet_t1", single_vars["pt_pfmet_t1"].get(), "pt_pfmet_t1/F");
+    tree->Branch("pt_pfmet_t1smear", single_vars["pt_pfmet_t1smear"].get(), "pt_pfmet_t1smear/F");
 }
 
 METAnalyzer::~METAnalyzer()
@@ -132,6 +146,11 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     h_pt_pfmet_t1smear->Fill(pfmet_t1smear_p4.pt());
 
     h_ratio_pt_pfmet_t1smear_div_pfmet_t1->Fill(pfmet_t1smear_p4.pt() / pfmet_t1_p4.pt());
+
+    *single_vars["pt_pfmet_t1"]      = pfmet_t1_p4.pt();
+    *single_vars["pt_pfmet_t1smear"] = pfmet_t1smear_p4.pt();
+
+    tree->Fill();
 }
 
 // ------------ method called once each job just before starting event loop  ------------
