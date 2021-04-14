@@ -66,8 +66,12 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
 
     edm::Service< TFileService > fs;
 
-    TH1D* h_pfmet_pt;
-    TH1D* h_pfmet_original_pt;
+    // different kinds of MET
+    TH1D* h_pt_pfmet_t1;
+    TH1D* h_pt_pfmet_t1smear;
+
+    // ratios of different METs
+    TH1D* h_ratio_pt_pfmet_t1smear_div_pfmet_t1;
 };
 
 //
@@ -92,8 +96,11 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
 {
     // now do what ever initialization is needed
 
-    h_pfmet_pt          = fs->make< TH1D >("pfmet_pt", "PFMET p_{t}", 20, 0., 500.);
-    h_pfmet_original_pt = fs->make< TH1D >("pfmet_original_pt", "PFMET p_{t,orig}", 20, 0., 500.);
+    h_pt_pfmet_t1      = fs->make< TH1D >("pt_pfmet_t1", "PFMET T1;p_{T};arbitrary units", 20, 0., 500.);
+    h_pt_pfmet_t1smear = fs->make< TH1D >("pt_pfmet_t1smear", "PFMET T1Smear;p_{T};arbitrary units", 20, 0., 500.);
+
+    h_ratio_pt_pfmet_t1smear_div_pfmet_t1 =
+        fs->make< TH1D >("pt_pfmet_t1smear_div_pfmet_t1", "PFMET T1Smear/T1;p_{T,T1Smear}/p_{T,T1};arbitrary units", 40, 0., 2.);
 }
 
 METAnalyzer::~METAnalyzer()
@@ -118,11 +125,13 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     edm::Handle< std::vector< pat::MET > > hPFMETsOriginal;
     iEvent.getByToken(EDMPFMETOriginalToken, hPFMETsOriginal);
 
-    auto pfmet_p4          = hPFMETs->at(0).corP4(pat::MET::Type1);
-    auto pfmet_original_p4 = hPFMETsOriginal->at(0).corP4(pat::MET::Type1);
+    auto pfmet_t1_p4      = hPFMETs->at(0).corP4(pat::MET::Type1);
+    auto pfmet_t1smear_p4 = hPFMETs->at(0).corP4(pat::MET::Type1Smear);
 
-    h_pfmet_pt->Fill(pfmet_p4.pt());
-    h_pfmet_original_pt->Fill(pfmet_original_p4.pt());
+    h_pt_pfmet_t1->Fill(pfmet_t1_p4.pt());
+    h_pt_pfmet_t1smear->Fill(pfmet_t1smear_p4.pt());
+
+    h_ratio_pt_pfmet_t1smear_div_pfmet_t1->Fill(pfmet_t1smear_p4.pt() / pfmet_t1_p4.pt());
 }
 
 // ------------ method called once each job just before starting event loop  ------------
