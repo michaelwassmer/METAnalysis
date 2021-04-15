@@ -68,13 +68,6 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
 
     edm::Service< TFileService > fs;
 
-    // different kinds of MET
-    TH1D* h_pt_pfmet_t1;
-    TH1D* h_pt_pfmet_t1smear;
-
-    // ratios of different METs
-    TH1D* h_ratio_pt_pfmet_t1smear_div_pfmet_t1;
-
     TTree* tree;
 
     std::map< std::string, std::unique_ptr< float > > single_float_vars;

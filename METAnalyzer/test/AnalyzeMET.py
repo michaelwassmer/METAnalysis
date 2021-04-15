@@ -33,7 +33,7 @@ options.register(
 )
 options.register(
     "outName",
-    "METAnalysis",
+    "MET_ntuples",
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "name and path of the output files (without extension)",
@@ -194,7 +194,7 @@ runMetCorAndUncFromMiniAOD(
 
 ####################### configure process #############################
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("histo.root") )
+process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outName+".root") )
 
 process.load("METAnalysis.METAnalyzer.METAnalyzer_cfi")
 process.METAnalyzer.isData = cms.bool(options.isData)
