@@ -107,17 +107,33 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
 
 {
     // now do what ever initialization is needed
-
-    h_pt_pfmet_t1      = fs->make< TH1D >("pt_pfmet_t1", "PFMET T1;p_{T};arbitrary units", 20, 0., 500.);
-    h_pt_pfmet_t1smear = fs->make< TH1D >("pt_pfmet_t1smear", "PFMET T1Smear;p_{T};arbitrary units", 20, 0., 500.);
-
-    h_ratio_pt_pfmet_t1smear_div_pfmet_t1 =
-        fs->make< TH1D >("pt_pfmet_t1smear_div_pfmet_t1", "PFMET T1Smear/T1;p_{T,T1Smear}/p_{T,T1};arbitrary units", 40, 0., 2.);
-
     tree = fs->make< TTree >("MET_tree", "MET_tree");
 
+    InitSingleVar("pt_pfmet_raw", "F");
+    InitSingleVar("pt_pfmet_raw_jes_up", "F");
+    InitSingleVar("pt_pfmet_raw_jes_down", "F");
+    InitSingleVar("pt_pfmet_raw_jer_up", "F");
+    InitSingleVar("pt_pfmet_raw_jer_down", "F");
+    InitSingleVar("pt_pfmet_raw_jersmear_up", "F");
+    InitSingleVar("pt_pfmet_raw_jersmear_down", "F");
+
     InitSingleVar("pt_pfmet_t1", "F");
+    InitSingleVar("pt_pfmet_t1_jes_up", "F");
+    InitSingleVar("pt_pfmet_t1_jes_down", "F");
+    InitSingleVar("pt_pfmet_t1_jer_up", "F");
+    InitSingleVar("pt_pfmet_t1_jer_down", "F");
+    InitSingleVar("pt_pfmet_t1_jersmear_up", "F");
+    InitSingleVar("pt_pfmet_t1_jersmear_down", "F");
+
     InitSingleVar("pt_pfmet_t1smear", "F");
+    InitSingleVar("pt_pfmet_t1smear_jes_up", "F");
+    InitSingleVar("pt_pfmet_t1smear_jes_down", "F");
+    InitSingleVar("pt_pfmet_t1smear_jer_up", "F");
+    InitSingleVar("pt_pfmet_t1smear_jer_down", "F");
+    InitSingleVar("pt_pfmet_t1smear_jersmear_up", "F");
+    InitSingleVar("pt_pfmet_t1smear_jersmear_down", "F");
+
+    InitSingleVar("pt_genmet", "F");
 }
 
 METAnalyzer::~METAnalyzer()
@@ -142,16 +158,34 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     edm::Handle< std::vector< pat::MET > > hPFMETsOriginal;
     iEvent.getByToken(EDMPFMETOriginalToken, hPFMETsOriginal);
 
-    auto pfmet_t1_p4      = hPFMETs->at(0).corP4(pat::MET::Type1);
-    auto pfmet_t1smear_p4 = hPFMETs->at(0).corP4(pat::MET::Type1Smear);
+    auto pfmet  = hPFMETs->at(0);
+    auto genmet = pfmet.genMET();
 
-    h_pt_pfmet_t1->Fill(pfmet_t1_p4.pt());
-    h_pt_pfmet_t1smear->Fill(pfmet_t1smear_p4.pt());
+    FillSingleVar("pt_pfmet_raw", float(pfmet.corPt(pat::MET::Raw)));
+    FillSingleVar("pt_pfmet_raw_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Raw)));
+    FillSingleVar("pt_pfmet_raw_jes_down", float(pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Raw)));
+    FillSingleVar("pt_pfmet_raw_jer_up", float(pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Raw)));
+    FillSingleVar("pt_pfmet_raw_jer_down", float(pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Raw)));
+    // FillSingleVar("pt_pfmet_raw_jersmear_up", float(pfmet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Raw)));
+    // FillSingleVar("pt_pfmet_raw_jersmear_down", float(pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Raw)));
 
-    h_ratio_pt_pfmet_t1smear_div_pfmet_t1->Fill(pfmet_t1smear_p4.pt() / pfmet_t1_p4.pt());
+    FillSingleVar("pt_pfmet_t1", float(pfmet.corPt(pat::MET::Type1)));
+    FillSingleVar("pt_pfmet_t1_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1)));
+    FillSingleVar("pt_pfmet_t1_jes_down", float(pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1)));
+    FillSingleVar("pt_pfmet_t1_jer_up", float(pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1)));
+    FillSingleVar("pt_pfmet_t1_jer_down", float(pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1)));
+    // FillSingleVar("pt_pfmet_t1_jersmear_up", float(pfmet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1)));
+    // FillSingleVar("pt_pfmet_t1_jersmear_down", float(pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1)));
 
-    FillSingleVar("pt_pfmet_t1", float(pfmet_t1_p4.pt()));
-    FillSingleVar("pt_pfmet_t1smear", float(pfmet_t1smear_p4.pt()));
+    FillSingleVar("pt_pfmet_t1smear", float(pfmet.corPt(pat::MET::Type1Smear)));
+    FillSingleVar("pt_pfmet_t1smear_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_pfmet_t1smear_jes_down", float(pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1Smear)));
+    FillSingleVar("pt_pfmet_t1smear_jer_up", float(pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_pfmet_t1smear_jer_down", float(pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1Smear)));
+    // FillSingleVar("pt_pfmet_t1smear_jersmear_up", float(pfmet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1Smear)));
+    // FillSingleVar("pt_pfmet_t1smear_jersmear_down", float(pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1Smear)));
+
+    FillSingleVar("pt_genmet", float(genmet->pt()));
 
     tree->Fill();
 }
