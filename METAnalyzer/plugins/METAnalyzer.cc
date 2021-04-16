@@ -109,6 +109,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_raw_jer_down", "F");
     InitSingleVar("pt_pfmet_raw_jersmear_up", "F");
     InitSingleVar("pt_pfmet_raw_jersmear_down", "F");
+    InitSingleVar("pt_pfmet_raw_uncen_up", "F");
+    InitSingleVar("pt_pfmet_raw_uncen_down", "F");
 
     InitSingleVar("pt_pfmet_t1", "F");
     InitSingleVar("pt_pfmet_t1_jes_up", "F");
@@ -117,6 +119,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_t1_jer_down", "F");
     InitSingleVar("pt_pfmet_t1_jersmear_up", "F");
     InitSingleVar("pt_pfmet_t1_jersmear_down", "F");
+    InitSingleVar("pt_pfmet_t1_uncen_up", "F");
+    InitSingleVar("pt_pfmet_t1_uncen_down", "F");
 
     InitSingleVar("pt_pfmet_t1smear", "F");
     InitSingleVar("pt_pfmet_t1smear_jes_up", "F");
@@ -125,6 +129,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_t1smear_jer_down", "F");
     InitSingleVar("pt_pfmet_t1smear_jersmear_up", "F");
     InitSingleVar("pt_pfmet_t1smear_jersmear_down", "F");
+    InitSingleVar("pt_pfmet_t1smear_uncen_up", "F");
+    InitSingleVar("pt_pfmet_t1smear_uncen_down", "F");
 
     InitSingleVar("pt_genmet", "F");
 }
@@ -161,6 +167,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_raw_jer_down", float(pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Raw)));
     // FillSingleVar("pt_pfmet_raw_jersmear_up", float(pfmet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Raw)));
     // FillSingleVar("pt_pfmet_raw_jersmear_down", float(pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Raw)));
+    FillSingleVar("pt_pfmet_raw_uncen_up", float(pfmet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Raw)));
+    FillSingleVar("pt_pfmet_raw_uncen_down", float(pfmet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Raw)));
 
     FillSingleVar("pt_pfmet_t1", float(pfmet.corPt(pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1)));
@@ -169,6 +177,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_t1_jer_down", float(pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1)));
     // FillSingleVar("pt_pfmet_t1_jersmear_up", float(pfmet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1)));
     // FillSingleVar("pt_pfmet_t1_jersmear_down", float(pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1)));
+    FillSingleVar("pt_pfmet_t1_uncen_up", float(pfmet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1)));
+    FillSingleVar("pt_pfmet_t1_uncen_down", float(pfmet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1)));
 
     FillSingleVar("pt_pfmet_t1smear", float(pfmet.corPt(pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear)));
@@ -177,6 +187,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_t1smear_jer_down", float(pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1Smear)));
     // FillSingleVar("pt_pfmet_t1smear_jersmear_up", float(pfmet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1Smear)));
     // FillSingleVar("pt_pfmet_t1smear_jersmear_down", float(pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1Smear)));
+    FillSingleVar("pt_pfmet_t1smear_uncen_up", float(pfmet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_pfmet_t1smear_uncen_down", float(pfmet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1Smear)));
 
     FillSingleVar("pt_genmet", float(genmet->pt()));
 
