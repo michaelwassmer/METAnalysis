@@ -65,6 +65,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
 
     const bool        isData;
     const std::string era;
+    const double      sample_weight;
 
     edm::Service< TFileService > fs;
 
@@ -72,11 +73,13 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
 
     std::map< std::string, std::unique_ptr< float > > single_float_vars;
     std::map< std::string, std::unique_ptr< int > >   single_int_vars;
+    std::map< std::string, std::unique_ptr< long > >  single_long_vars;
 
     // ----------member functions ---------------------------
     void InitSingleVar(std::string name, std::string type);
     void FillSingleVar(std::string name, float value);
     void FillSingleVar(std::string name, int value);
+    void FillSingleVar(std::string name, long value);
 };
 
 //
@@ -96,11 +99,18 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     EDMPFMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_pf_original"))},
     EDMPuppiMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi_original"))},
     isData{iConfig.getParameter< bool >("isData")},
-    era{iConfig.getParameter< std::string >("era")}
+    era{iConfig.getParameter< std::string >("era")},
+    sample_weight{iConfig.getParameter< double >("sample_weight")}
 
 {
     // now do what ever initialization is needed
     tree = fs->make< TTree >("MET_tree", "MET_tree");
+
+    InitSingleVar("evt_run", "L");
+    InitSingleVar("evt_lumi", "L");
+    InitSingleVar("evt_id", "L");
+    
+    InitSingleVar("sample_weight", "F");
 
     InitSingleVar("pt_pfmet_raw", "F");
     InitSingleVar("pt_pfmet_raw_jes_up", "F");
@@ -159,6 +169,12 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
     auto pfmet  = hPFMETs->at(0);
     auto genmet = pfmet.genMET();
+
+    FillSingleVar("evt_run", long(iEvent.id().run()));
+    FillSingleVar("evt_id", long(iEvent.id().event()));
+    FillSingleVar("evt_lumi", long(iEvent.luminosityBlock()));
+    
+    FillSingleVar("sample_weight", float(sample_weight));
 
     FillSingleVar("pt_pfmet_raw", float(pfmet.corPt(pat::MET::Raw)));
     FillSingleVar("pt_pfmet_raw_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Raw)));
@@ -227,13 +243,18 @@ void METAnalyzer::InitSingleVar(std::string name, std::string type)
         single_int_vars.insert({name, std::unique_ptr< int >(new int(-999.0))});
         tree->Branch(name.c_str(), single_int_vars[name].get(), (name + "/I").c_str());
     }
+    else if (type == "L") {
+        single_long_vars.insert({name, std::unique_ptr< long >(new long(-999.0))});
+        tree->Branch(name.c_str(), single_long_vars[name].get(), (name + "/L").c_str());
+    }
     else {
-        std::cout << "currently only float (F) and int (I) types are supported at the moment" << std::endl;
+        std::cout << "currently only float (F), int (I), and long(L) types are supported at the moment" << std::endl;
         throw std::exception();
     }
 }
 void METAnalyzer::FillSingleVar(std::string name, float value) { *single_float_vars[name] = value; }
 void METAnalyzer::FillSingleVar(std::string name, int value) { *single_int_vars[name] = value; }
+void METAnalyzer::FillSingleVar(std::string name, long value) { *single_long_vars[name] = value; }
 
 // define this as a plug-in
 DEFINE_FWK_MODULE(METAnalyzer);

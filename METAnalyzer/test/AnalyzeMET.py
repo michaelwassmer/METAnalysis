@@ -40,13 +40,15 @@ options.register(
 )
 # this option is just there to make the config work with the shell script workflow, it does nothing
 options.register(
-    "weight",
+    "sampleWeight",
     1.0,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.float,
     "not doing anything",
 )
 options.parseArguments()
+
+print(options.sampleWeight)
 
 if options.maxEvents is -1:  # maxEvents is set in VarParsing class by default to -1
     options.maxEvents = 1001  # reset for testing
@@ -199,6 +201,7 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 process.load("METAnalysis.METAnalyzer.METAnalyzer_cfi")
 process.METAnalyzer.isData = cms.bool(options.isData)
 process.METAnalyzer.era = cms.string(options.dataEra)
+process.METAnalyzer.sample_weight = cms.double(options.sampleWeight)
 process.METAnalyzer.met_pf = cms.InputTag("slimmedMETs","",process.name_())
 process.METAnalyzer.met_puppi = cms.InputTag("slimmedMETsPuppi")
 
