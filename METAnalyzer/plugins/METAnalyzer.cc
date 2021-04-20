@@ -34,6 +34,9 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+//#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
+
 #include "TTree.h"
 
 //
@@ -62,6 +65,8 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPuppiMETToken;          // PUPPI MET
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPFMETOriginalToken;     // PF MET
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPuppiMETOriginalToken;  // PUPPI MET
+    edm::EDGetTokenT< GenEventInfoProduct >     EDMGenEventInfoToken;
+    // edm::EDGetTokenT< GenRunInfoProduct >     EDMGenRunInfoToken;
 
     const bool        isData;
     const std::string era;
@@ -98,6 +103,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     EDMPuppiMETToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi"))},
     EDMPFMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_pf_original"))},
     EDMPuppiMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi_original"))},
+    EDMGenEventInfoToken{consumes< GenEventInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_event_info"))},
+    // EDMGenRunInfoToken{consumes< GenRunInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_run_info"))},
     isData{iConfig.getParameter< bool >("isData")},
     era{iConfig.getParameter< std::string >("era")},
     sample_weight{iConfig.getParameter< double >("sample_weight")}
@@ -111,6 +118,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("evt_id", "L");
 
     InitSingleVar("sample_weight", "F");
+    InitSingleVar("generator_weight", "F");
+    // InitSingleVar("cross_section", "F");
 
     InitSingleVar("pt_pfmet_raw", "F");
     InitSingleVar("pt_pfmet_raw_jes_up", "F");
@@ -167,14 +176,24 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     edm::Handle< std::vector< pat::MET > > hPFMETsOriginal;
     iEvent.getByToken(EDMPFMETOriginalToken, hPFMETsOriginal);
 
-    auto pfmet  = hPFMETs->at(0);
-    auto genmet = pfmet.genMET();
+    edm::Handle< GenEventInfoProduct > hGenEventInfo;
+    iEvent.getByToken(EDMGenEventInfoToken, hGenEventInfo);
+
+    // edm::Handle< GenRunInfoProduct > hGenRunInfo;
+    // iEvent.getByToken(EDMGenRunInfoToken, hGenRunInfo);
+
+    auto pfmet        = hPFMETs->at(0);
+    auto genmet       = pfmet.genMET();
+    auto geneventinfo = *hGenEventInfo;
+    // auto genruninfo = *hGenRunInfo;
 
     FillSingleVar("evt_run", long(iEvent.id().run()));
     FillSingleVar("evt_id", long(iEvent.id().event()));
     FillSingleVar("evt_lumi", long(iEvent.luminosityBlock()));
 
     FillSingleVar("sample_weight", float(sample_weight));
+    FillSingleVar("generator_weight", float(geneventinfo.weight()));
+    // FillSingleVar("cross_section", float(genruninfo.crossSection()));
 
     FillSingleVar("pt_pfmet_raw", float(pfmet.corPt(pat::MET::Raw)));
     FillSingleVar("pt_pfmet_raw_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Raw)));
