@@ -109,7 +109,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("evt_run", "L");
     InitSingleVar("evt_lumi", "L");
     InitSingleVar("evt_id", "L");
-    
+
     InitSingleVar("sample_weight", "F");
 
     InitSingleVar("pt_pfmet_raw", "F");
@@ -173,7 +173,7 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("evt_run", long(iEvent.id().run()));
     FillSingleVar("evt_id", long(iEvent.id().event()));
     FillSingleVar("evt_lumi", long(iEvent.luminosityBlock()));
-    
+
     FillSingleVar("sample_weight", float(sample_weight));
 
     FillSingleVar("pt_pfmet_raw", float(pfmet.corPt(pat::MET::Raw)));
