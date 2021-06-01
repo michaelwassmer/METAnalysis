@@ -214,6 +214,12 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // FillSingleVar("pt_pfmet_t1_jersmear_down", float(pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_uncen_up", float(pfmet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_uncen_down", float(pfmet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1)));
+    
+    // std::cout << "pt_pfmet_t1: " << pfmet.corPt(pat::MET::Type1) << std::endl;
+    // std::cout << "pt_pfmet_t1_jes_up: " << pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1) << std::endl;
+    // std::cout << "pt_pfmet_t1_jes_down: " << pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1) << std::endl;
+    // std::cout << "pt_pfmet_t1_jer_up: " << pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1) << std::endl;
+    // std::cout << "pt_pfmet_t1_jer_down: " << pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1) << std::endl;
 
     FillSingleVar("pt_pfmet_t1smear", float(pfmet.corPt(pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear)));
@@ -224,6 +230,12 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // FillSingleVar("pt_pfmet_t1smear_jersmear_down", float(pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_uncen_up", float(pfmet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_uncen_down", float(pfmet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1Smear)));
+    
+    // std::cout << "pt_pfmet_t1smear: " << pfmet.corPt(pat::MET::Type1Smear) << std::endl;
+    // std::cout << "pt_pfmet_t1smear_jes_up: " << pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear) << std::endl;
+    // std::cout << "pt_pfmet_t1smear_jes_down: " << pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1Smear) << std::endl;
+    // std::cout << "pt_pfmet_t1smear_jer_up: " << pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1Smear) << std::endl;
+    // std::cout << "pt_pfmet_t1smear_jer_down: " << pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1Smear) << std::endl;
 
     FillSingleVar("pt_genmet", float(genmet->pt()));
 
