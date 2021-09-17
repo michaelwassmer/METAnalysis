@@ -218,7 +218,7 @@ elif "2017" in options.dataEra:
         process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
     else:
         process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "PAT")
-        process.MMETAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
+        process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
 elif "2018" in options.dataEra:
     if options.isData:
         process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "RECO")
