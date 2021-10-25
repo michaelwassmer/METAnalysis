@@ -236,9 +236,12 @@ else:
 
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
-# met sequence to recalculate MET
-process.met = cms.Path(process.fullPatMetSequence)
+# met sequence to recalculate MET if running in scheduled mode
+#process.met = cms.Path(process.fullPatMetSequence)
 
 # write the events which pass the skimming selection and only keep the specified file content
 process.final = cms.EndPath(process.METAnalyzer)
+
+# associate the patAlgosToolsTask to the Endpath for unscheduled mode
+process.final.associate(process.patAlgosToolsTask)
 #print(process.dumpPython())
