@@ -61,9 +61,9 @@ elif not options.isData:
     elif "2016postVFP" in options.dataEra:
         options.globalTag = "106X_mcRun2_asymptotic_v17"
     elif "2017" in options.dataEra:
-        options.globalTag = "106X_mc2017_realistic_v8"
+        options.globalTag = "106X_mc2017_realistic_v9"
     elif "2018" in options.dataEra:
-        options.globalTag = "106X_upgrade2018_realistic_v15_L1v1"
+        options.globalTag = "106X_upgrade2018_realistic_v16_L1v1"
     else:
         raise Exception(
             "dataEra "
