@@ -77,19 +77,19 @@ if not options.inputFiles:
     if not options.isData:
         if "2018" in options.dataEra:
             options.inputFiles = [
-                "root://xrootd-cms.infn.it///store/mc/RunIISummer20UL18MiniAOD/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/71F1E2CE-7274-8F48-909C-3AF1C874A792.root"
+                "root://xrootd-cms.infn.it///store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/130000/EE73AECB-35A7-6044-B82D-9DAE4E8DD693.root"
             ]
         elif "2017" in options.dataEra:
             options.inputFiles = [
-                "root://xrootd-cms.infn.it///store/mc/RunIISummer20UL17MiniAOD/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/00000/B5B3F393-9668-654A-B338-9DFFAD451B00.root"
+                "root://xrootd-cms.infn.it///store/mc/RunIISummer20UL17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mc2017_realistic_v9-v1/00000/630B34E6-CA6B-4248-9CEC-77C580165B3B.root"
             ]
         elif "2016postVFP" in options.dataEra:
             options.inputFiles = [
-                "root://xrootd-cms.infn.it///store/mc/RunIISummer20UL16MiniAOD/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_v13-v2/10001/165C7F49-9F40-A442-B61E-562F4C739B85.root"
+                "root://xrootd-cms.infn.it///store/mc/RunIISummer20UL16MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_v17-v1/270000/7B3EA82B-EF35-3B4E-A6B5-E01CC754D975.root"
             ]
         elif "2016preVFP" in options.dataEra:
             options.inputFiles = [
-                "root://xrootd-cms.infn.it///store/mc/RunIISummer20UL16MiniAODAPV/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v8-v2/10001/68625BA9-DC73-E443-8C70-C35D2A71A2E3.root"
+                "root://xrootd-cms.infn.it///store/mc/RunIISummer20UL16MiniAODAPVv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v11-v1/130000/92CDDFFC-0F07-C24B-A27E-3D54D1F8CC5B.root"
             ]
         else:
             raise Exception(
@@ -100,19 +100,19 @@ if not options.inputFiles:
     else:
         if "2018" in options.dataEra:
             options.inputFiles = [
-                "root://xrootd-cms.infn.it///store/data/Run2018B/MET/MINIAOD/12Nov2019_UL2018-v3/110000/DF6D6B8D-40A6-9D4D-9118-3D58895920B5.root"
+                "root://xrootd-cms.infn.it///store/data/Run2018B/MET/MINIAOD/UL2018_MiniAODv2-v2/70000/E1EF08B2-69D6-2A46-8FB9-6788D459FAEF.root"
             ]
         elif "2017" in options.dataEra:
             options.inputFiles = [
-                "root://xrootd-cms.infn.it///store/data/Run2017B/MET/MINIAOD/09Aug2019_UL2017_rsb-v1/50000/7BE4D67B-7654-A741-9035-86B87C53242B.root"
+                "root://xrootd-cms.infn.it///store/data/Run2017B/MET/MINIAOD/UL2017_MiniAODv2-v1/280000/16579E76-075B-CE4A-A1D1-FC380CB0AC6A.root"
             ]
         elif "2016preVFP" in options.dataEra:
             options.inputFiles = [
-                "root://xrootd-cms.infn.it///store/data/Run2016D/MET/MINIAOD/21Feb2020_UL2016_HIPM-v1/40000/7E0E2AA5-9359-EA4A-A5C9-FB982CE2575F.root"
+                "root://xrootd-cms.infn.it///store/data/Run2016D/MET/MINIAOD/HIPM_UL2016_MiniAODv2-v2/270000/DD50BD28-CDC8-0947-8347-DDAA87EB14DA.root"
             ]
         elif "2016postVFP" in options.dataEra:
             options.inputFiles = [
-                "root://xrootd-cms.infn.it///store/data/Run2016H/MET/MINIAOD/21Feb2020_UL2016-v2/230000/369789BB-378D-9747-9CFC-09392D1B8C85.root"
+                "root://xrootd-cms.infn.it///store/data/Run2016H/MET/MINIAOD/UL2016_MiniAODv2-v2/120000/5379D33B-8501-6A4C-99B9-94C21D448DD6.root"
             ]
         else:
             raise Exception(
