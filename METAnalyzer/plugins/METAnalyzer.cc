@@ -187,6 +187,63 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_t1smear_pho_up", "F");
     InitSingleVar("pt_pfmet_t1smear_pho_down", "F");
 
+    // raw puppimet quantities
+    InitSingleVar("pt_puppimet_raw", "F");
+    InitSingleVar("pt_puppimet_raw_jes_up", "F");
+    InitSingleVar("pt_puppimet_raw_jes_down", "F");
+    InitSingleVar("pt_puppimet_raw_jer_up", "F");
+    InitSingleVar("pt_puppimet_raw_jer_down", "F");
+    InitSingleVar("pt_puppimet_raw_jersmear_up", "F");
+    InitSingleVar("pt_puppimet_raw_jersmear_down", "F");
+    InitSingleVar("pt_puppimet_raw_uncen_up", "F");
+    InitSingleVar("pt_puppimet_raw_uncen_down", "F");
+    InitSingleVar("pt_puppimet_raw_ele_up", "F");
+    InitSingleVar("pt_puppimet_raw_ele_down", "F");
+    InitSingleVar("pt_puppimet_raw_muo_up", "F");
+    InitSingleVar("pt_puppimet_raw_muo_down", "F");
+    InitSingleVar("pt_puppimet_raw_tau_up", "F");
+    InitSingleVar("pt_puppimet_raw_tau_down", "F");
+    InitSingleVar("pt_puppimet_raw_pho_up", "F");
+    InitSingleVar("pt_puppimet_raw_pho_down", "F");
+
+    // type1 corrected puppimet quantities
+    InitSingleVar("pt_puppimet_t1", "F");
+    InitSingleVar("pt_puppimet_t1_jes_up", "F");
+    InitSingleVar("pt_puppimet_t1_jes_down", "F");
+    InitSingleVar("pt_puppimet_t1_jer_up", "F");
+    InitSingleVar("pt_puppimet_t1_jer_down", "F");
+    InitSingleVar("pt_puppimet_t1_jersmear_up", "F");
+    InitSingleVar("pt_puppimet_t1_jersmear_down", "F");
+    InitSingleVar("pt_puppimet_t1_uncen_up", "F");
+    InitSingleVar("pt_puppimet_t1_uncen_down", "F");
+    InitSingleVar("pt_puppimet_t1_ele_up", "F");
+    InitSingleVar("pt_puppimet_t1_ele_down", "F");
+    InitSingleVar("pt_puppimet_t1_muo_up", "F");
+    InitSingleVar("pt_puppimet_t1_muo_down", "F");
+    InitSingleVar("pt_puppimet_t1_tau_up", "F");
+    InitSingleVar("pt_puppimet_t1_tau_down", "F");
+    InitSingleVar("pt_puppimet_t1_pho_up", "F");
+    InitSingleVar("pt_puppimet_t1_pho_down", "F");
+
+    // type1 + smearing corrected puppimet quantities
+    InitSingleVar("pt_puppimet_t1smear", "F");
+    InitSingleVar("pt_puppimet_t1smear_jes_up", "F");
+    InitSingleVar("pt_puppimet_t1smear_jes_down", "F");
+    InitSingleVar("pt_puppimet_t1smear_jer_up", "F");
+    InitSingleVar("pt_puppimet_t1smear_jer_down", "F");
+    InitSingleVar("pt_puppimet_t1smear_jersmear_up", "F");
+    InitSingleVar("pt_puppimet_t1smear_jersmear_down", "F");
+    InitSingleVar("pt_puppimet_t1smear_uncen_up", "F");
+    InitSingleVar("pt_puppimet_t1smear_uncen_down", "F");
+    InitSingleVar("pt_puppimet_t1smear_ele_up", "F");
+    InitSingleVar("pt_puppimet_t1smear_ele_down", "F");
+    InitSingleVar("pt_puppimet_t1smear_muo_up", "F");
+    InitSingleVar("pt_puppimet_t1smear_muo_down", "F");
+    InitSingleVar("pt_puppimet_t1smear_tau_up", "F");
+    InitSingleVar("pt_puppimet_t1smear_tau_down", "F");
+    InitSingleVar("pt_puppimet_t1smear_pho_up", "F");
+    InitSingleVar("pt_puppimet_t1smear_pho_down", "F");
+
     // generator met
     InitSingleVar("pt_genmet", "F");
 }
@@ -211,8 +268,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     iEvent.getByToken(EDMPFMETToken, hPFMETs);
 
     // get puppimet pat::MET object
-    edm::Handle< std::vector< pat::MET > > hPFMETsOriginal;
-    iEvent.getByToken(EDMPFMETOriginalToken, hPFMETsOriginal);
+    edm::Handle< std::vector< pat::MET > > hPuppiMETs;
+    iEvent.getByToken(EDMPuppiMETToken, hPuppiMETs);
 
     // get generator event info object to retrieve generator weight
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
@@ -225,6 +282,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
     // retrieve pfmet pat::MET object
     auto pfmet        = hPFMETs->at(0);
+    // retrieve puppimet pat::MET object
+    auto puppimet        = hPuppiMETs->at(0);
     // retrieve genmet object
     auto genmet       = pfmet.genMET();
 
@@ -293,6 +352,63 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_t1smear_tau_down", float(pfmet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_pho_up", float(pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_pho_down", float(pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1Smear)));
+
+    // raw puppimet quantities
+    FillSingleVar("pt_puppimet_raw", float(puppimet.corPt(pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_jes_up", float(puppimet.shiftedPt(pat::MET::JetEnUp, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_jes_down", float(puppimet.shiftedPt(pat::MET::JetEnDown, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_jer_up", float(puppimet.shiftedPt(pat::MET::JetResUp, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_jer_down", float(puppimet.shiftedPt(pat::MET::JetResDown, pat::MET::Raw)));
+    // FillSingleVar("pt_puppimet_raw_jersmear_up", float(puppimet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Raw)));
+    // FillSingleVar("pt_puppimet_raw_jersmear_down", float(puppimet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_uncen_up", float(puppimet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_uncen_down", float(puppimet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_ele_up", float(puppimet.shiftedPt(pat::MET::ElectronEnUp, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_ele_down", float(puppimet.shiftedPt(pat::MET::ElectronEnDown, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_muo_up", float(puppimet.shiftedPt(pat::MET::MuonEnUp, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_muo_down", float(puppimet.shiftedPt(pat::MET::MuonEnDown, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_tau_up", float(puppimet.shiftedPt(pat::MET::TauEnUp, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_tau_down", float(puppimet.shiftedPt(pat::MET::TauEnDown, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_pho_up", float(puppimet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Raw)));
+    FillSingleVar("pt_puppimet_raw_pho_down", float(puppimet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Raw)));
+
+    // type1 corrected puppimet quantities
+    FillSingleVar("pt_puppimet_t1", float(puppimet.corPt(pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_jes_up", float(puppimet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_jes_down", float(puppimet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_jer_up", float(puppimet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_jer_down", float(puppimet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1)));
+    // FillSingleVar("pt_puppimet_t1_jersmear_up", float(puppimet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1)));
+    // FillSingleVar("pt_puppimet_t1_jersmear_down", float(puppimet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_uncen_up", float(puppimet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_uncen_down", float(puppimet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_ele_up", float(puppimet.shiftedPt(pat::MET::ElectronEnUp, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_ele_down", float(puppimet.shiftedPt(pat::MET::ElectronEnDown, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_muo_up", float(puppimet.shiftedPt(pat::MET::MuonEnUp, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_muo_down", float(puppimet.shiftedPt(pat::MET::MuonEnDown, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_tau_up", float(puppimet.shiftedPt(pat::MET::TauEnUp, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_tau_down", float(puppimet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_pho_up", float(puppimet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1)));
+    FillSingleVar("pt_puppimet_t1_pho_down", float(puppimet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1)));
+
+    // type1 + smearing corrected puppimet quantities
+    FillSingleVar("pt_puppimet_t1smear", float(puppimet.corPt(pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_jes_up", float(puppimet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_jes_down", float(puppimet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_jer_up", float(puppimet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_jer_down", float(puppimet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1Smear)));
+    // FillSingleVar("pt_puppimet_t1smear_jersmear_up", float(puppimet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1Smear)));
+    // FillSingleVar("pt_puppimet_t1smear_jersmear_down", float(puppimet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_uncen_up", float(puppimet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_uncen_down", float(puppimet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_ele_up", float(puppimet.shiftedPt(pat::MET::ElectronEnUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_ele_down", float(puppimet.shiftedPt(pat::MET::ElectronEnDown, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_muo_up", float(puppimet.shiftedPt(pat::MET::MuonEnUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_muo_down", float(puppimet.shiftedPt(pat::MET::MuonEnDown, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_tau_up", float(puppimet.shiftedPt(pat::MET::TauEnUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_tau_down", float(puppimet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_pho_up", float(puppimet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1Smear)));
+    FillSingleVar("pt_puppimet_t1smear_pho_down", float(puppimet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1Smear)));
 
     // generator met
     if(not isData){
