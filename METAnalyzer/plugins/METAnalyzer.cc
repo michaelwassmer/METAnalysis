@@ -67,21 +67,29 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPuppiMETOriginalToken;  // PUPPI MET
     edm::EDGetTokenT< GenEventInfoProduct >     EDMGenEventInfoToken;
 
+    // some useful information to keep
     const bool        isData;
     const std::string era;
     const double      sample_weight;
 
+    // file service object to write output root file
     edm::Service< TFileService > fs;
 
+    // outputs to write into the output root file
     TTree* tree;
     TH1D* sumw;
+    TH1D* sume;
 
+    // containers to hold singleton variables within an event
     std::map< std::string, std::unique_ptr< float > > single_float_vars;
     std::map< std::string, std::unique_ptr< int > >   single_int_vars;
     std::map< std::string, std::unique_ptr< long > >  single_long_vars;
 
     // ----------member functions ---------------------------
+
+    // function to initialize a singleton variable
     void InitSingleVar(std::string name, std::string type);
+    // functions to write singleton variables of different types into the containers defined above
     void FillSingleVar(std::string name, float value);
     void FillSingleVar(std::string name, int value);
     void FillSingleVar(std::string name, long value);
@@ -97,22 +105,32 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     sample_weight{iConfig.getParameter< double >("sample_weight")}
 
 {
+    // now do what ever initialization is needed
+
+    // only read generator event info if we deal with simulation
     if(not isData){
         EDMGenEventInfoToken = consumes< GenEventInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_event_info"));
     }
-    // now do what ever initialization is needed
+
+    // output tree to write to file
     tree = fs->make< TTree >("MET_tree", "MET_tree");
 
+    // histogram to contain sum of all generator weights
     sumw = fs->make< TH1D >("sum_of_genweights", "sum_of_genweights", 1, 0, 2);
     sumw->Sumw2();
+    // histogram to contain sum of all events
+    sume = fs->make< TH1D >("sum_of_events", "sum_of_events", 1, 0, 2);
 
+    // event identification information
     InitSingleVar("evt_run", "L");
     InitSingleVar("evt_lumi", "L");
     InitSingleVar("evt_id", "L");
 
+    // necessary weights for sample normalization
     InitSingleVar("sample_weight", "F");
     InitSingleVar("generator_weight", "F");
 
+    // raw pfmet quantities
     InitSingleVar("pt_pfmet_raw", "F");
     InitSingleVar("pt_pfmet_raw_jes_up", "F");
     InitSingleVar("pt_pfmet_raw_jes_down", "F");
@@ -131,6 +149,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_raw_pho_up", "F");
     InitSingleVar("pt_pfmet_raw_pho_down", "F");
 
+    // type1 corrected pfmet quantities
     InitSingleVar("pt_pfmet_t1", "F");
     InitSingleVar("pt_pfmet_t1_jes_up", "F");
     InitSingleVar("pt_pfmet_t1_jes_down", "F");
@@ -149,6 +168,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_t1_pho_up", "F");
     InitSingleVar("pt_pfmet_t1_pho_down", "F");
 
+    // type1 + smearing corrected pfmet quantities
     InitSingleVar("pt_pfmet_t1smear", "F");
     InitSingleVar("pt_pfmet_t1smear_jes_up", "F");
     InitSingleVar("pt_pfmet_t1smear_jes_down", "F");
@@ -167,6 +187,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_t1smear_pho_up", "F");
     InitSingleVar("pt_pfmet_t1smear_pho_down", "F");
 
+    // generator met
     InitSingleVar("pt_genmet", "F");
 }
 
@@ -185,13 +206,15 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 {
     using namespace edm;
 
-    // get slimmedMETs (PFMET)
+    // get pfmet pat::MET object
     edm::Handle< std::vector< pat::MET > > hPFMETs;
     iEvent.getByToken(EDMPFMETToken, hPFMETs);
 
+    // get puppimet pat::MET object
     edm::Handle< std::vector< pat::MET > > hPFMETsOriginal;
     iEvent.getByToken(EDMPFMETOriginalToken, hPFMETsOriginal);
 
+    // get generator event info object to retrieve generator weight
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
     float generator_weight = 1.0;
     if(not isData){
@@ -200,16 +223,21 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         generator_weight = geneventinfo.weight();
     }
 
+    // retrieve pfmet pat::MET object
     auto pfmet        = hPFMETs->at(0);
+    // retrieve genmet object
     auto genmet       = pfmet.genMET();
 
+    // event identification information
     FillSingleVar("evt_run", long(iEvent.id().run()));
     FillSingleVar("evt_id", long(iEvent.id().event()));
     FillSingleVar("evt_lumi", long(iEvent.luminosityBlock()));
 
+    // necessary weights for sample normalization
     FillSingleVar("sample_weight", float(sample_weight));
     FillSingleVar("generator_weight", generator_weight);
 
+    // raw pfmet quantities
     FillSingleVar("pt_pfmet_raw", float(pfmet.corPt(pat::MET::Raw)));
     FillSingleVar("pt_pfmet_raw_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Raw)));
     FillSingleVar("pt_pfmet_raw_jes_down", float(pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Raw)));
@@ -228,6 +256,7 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_raw_pho_up", float(pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Raw)));
     FillSingleVar("pt_pfmet_raw_pho_down", float(pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Raw)));
 
+    // type1 corrected pfmet quantities
     FillSingleVar("pt_pfmet_t1", float(pfmet.corPt(pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_jes_down", float(pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1)));
@@ -245,13 +274,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_t1_tau_down", float(pfmet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_pho_up", float(pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_pho_down", float(pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1)));
-    
-    // std::cout << "pt_pfmet_t1: " << pfmet.corPt(pat::MET::Type1) << std::endl;
-    // std::cout << "pt_pfmet_t1_jes_up: " << pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1) << std::endl;
-    // std::cout << "pt_pfmet_t1_jes_down: " << pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1) << std::endl;
-    // std::cout << "pt_pfmet_t1_jer_up: " << pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1) << std::endl;
-    // std::cout << "pt_pfmet_t1_jer_down: " << pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1) << std::endl;
 
+    // type1 + smearing corrected pfmet quantities
     FillSingleVar("pt_pfmet_t1smear", float(pfmet.corPt(pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_jes_down", float(pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1Smear)));
@@ -269,18 +293,18 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_t1smear_tau_down", float(pfmet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_pho_up", float(pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_pho_down", float(pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1Smear)));
-    
-    // std::cout << "pt_pfmet_t1smear: " << pfmet.corPt(pat::MET::Type1Smear) << std::endl;
-    // std::cout << "pt_pfmet_t1smear_jes_up: " << pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear) << std::endl;
-    // std::cout << "pt_pfmet_t1smear_jes_down: " << pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1Smear) << std::endl;
-    // std::cout << "pt_pfmet_t1smear_jer_up: " << pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1Smear) << std::endl;
-    // std::cout << "pt_pfmet_t1smear_jer_down: " << pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1Smear) << std::endl;
+
+    // generator met
     if(not isData){
         FillSingleVar("pt_genmet", float(genmet->pt()));
     }
 
+    // fill output tree
     tree->Fill();
+    // fill generator weight into histogram containing the sum of generator weights
     sumw->Fill(1.0, generator_weight);
+    // increase number of processed events by filling 1 into histogram containing the sum of processed events
+    sume->Fill(1);
 }
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -305,6 +329,7 @@ void METAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
     // descriptions.addDefault(desc);
 }
 
+// function to initialize singleton variables
 void METAnalyzer::InitSingleVar(std::string name, std::string type)
 {
     if (type == "F") {
@@ -324,6 +349,8 @@ void METAnalyzer::InitSingleVar(std::string name, std::string type)
         throw std::exception();
     }
 }
+
+// functions to fill singleton variables of different types
 void METAnalyzer::FillSingleVar(std::string name, float value) { *single_float_vars[name] = value; }
 void METAnalyzer::FillSingleVar(std::string name, int value) { *single_int_vars[name] = value; }
 void METAnalyzer::FillSingleVar(std::string name, long value) { *single_long_vars[name] = value; }
