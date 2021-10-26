@@ -203,34 +203,36 @@ process.METAnalyzer.era = cms.string(options.dataEra)
 process.METAnalyzer.sample_weight = cms.double(options.sampleWeight)
 process.METAnalyzer.met_pf = cms.InputTag("slimmedMETs","",process.name_())
 process.METAnalyzer.met_puppi = cms.InputTag("slimmedMETsPuppi","",process.name_())
+process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "@skipCurrentProcess")
+process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "@skipCurrentProcess")
 
-if "2016" in options.dataEra:
-    if options.isData:
-        process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "DQM")
-        process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "DQM")
-    else:
-        process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "PAT")
-        process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
-elif "2017" in options.dataEra:
-    if options.isData:
-        process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "PAT")
-        process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
-    else:
-        process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "PAT")
-        process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
-elif "2018" in options.dataEra:
-    if options.isData:
-        process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "RECO")
-        process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "RECO")
-    else:
-        process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "PAT")
-        process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
-else:
-    raise Exception(
-        "dataEra "
-        + options.dataEra
-        + " not supported: USE dataEra=2016/2017/2018"
-    )
+# if "2016" in options.dataEra:
+#     if options.isData:
+#         process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "DQM")
+#         process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "DQM")
+#     else:
+#         process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "PAT")
+#         process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
+# elif "2017" in options.dataEra:
+#     if options.isData:
+#         process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "PAT")
+#         process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
+#     else:
+#         process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "PAT")
+#         process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
+# elif "2018" in options.dataEra:
+#     if options.isData:
+#         process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "RECO")
+#         process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "RECO")
+#     else:
+#         process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "PAT")
+#         process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "PAT")
+# else:
+#     raise Exception(
+#         "dataEra "
+#         + options.dataEra
+#         + " not supported: USE dataEra=2016/2017/2018"
+#     )
 
 ###############################################################
 
