@@ -159,9 +159,9 @@ process.load("CondCore.CondDB.CondDB_cfi")
 from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import (
     runMetCorAndUncFromMiniAOD,
 )
-#from PhysicsTools.PatAlgos.slimming.puppiForMET_cff import makePuppiesFromMiniAOD
+from PhysicsTools.PatAlgos.slimming.puppiForMET_cff import makePuppiesFromMiniAOD
 
-#makePuppiesFromMiniAOD(process, False)
+makePuppiesFromMiniAOD(process, False)
 
 runMetCorAndUncFromMiniAOD(
     process,
@@ -175,16 +175,16 @@ runMetCorAndUncFromMiniAOD(
     },
 )
 
-#runMetCorAndUncFromMiniAOD(
-#    process,
-#    isData=options.isData,
-#    metType="Puppi",
-#    postfix="Puppi",
-#    jetFlavor="AK4PFPuppi",
-#)
+runMetCorAndUncFromMiniAOD(
+    process,
+    isData=options.isData,
+    metType="Puppi",
+    postfix="Puppi",
+    jetFlavor="AK4PFPuppi",
+)
 
-#process.puppiNoLep.useExistingWeights = True
-#process.puppi.useExistingWeights = True
+process.puppiNoLep.useExistingWeights = True
+process.puppi.useExistingWeights = True
 
 ####################### MET filters ##########################
 #process.load("MonoTop.METFilter.METFilter_cfi")
@@ -202,7 +202,7 @@ process.METAnalyzer.isData = cms.bool(options.isData)
 process.METAnalyzer.era = cms.string(options.dataEra)
 process.METAnalyzer.sample_weight = cms.double(options.sampleWeight)
 process.METAnalyzer.met_pf = cms.InputTag("slimmedMETs","",process.name_())
-process.METAnalyzer.met_puppi = cms.InputTag("slimmedMETsPuppi")
+process.METAnalyzer.met_puppi = cms.InputTag("slimmedMETsPuppi","",process.name_())
 
 if "2016" in options.dataEra:
     if options.isData:
