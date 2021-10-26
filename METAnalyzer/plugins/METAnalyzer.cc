@@ -38,6 +38,7 @@
 //#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
 #include "TTree.h"
+#include "TH1D.h"
 
 //
 // class declaration
@@ -75,6 +76,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::Service< TFileService > fs;
 
     TTree* tree;
+    TH1D* sumw;
 
     std::map< std::string, std::unique_ptr< float > > single_float_vars;
     std::map< std::string, std::unique_ptr< int > >   single_int_vars;
@@ -87,31 +89,25 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     void FillSingleVar(std::string name, long value);
 };
 
-//
-// constants, enums and typedefs
-//
-
-//
-// static data member definitions
-//
-
-//
-// constructors and destructor
-//
 METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     EDMPFMETToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_pf"))},
     EDMPuppiMETToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi"))},
     EDMPFMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_pf_original"))},
     EDMPuppiMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi_original"))},
-    EDMGenEventInfoToken{consumes< GenEventInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_event_info"))},
-    // EDMGenRunInfoToken{consumes< GenRunInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_run_info"))},
     isData{iConfig.getParameter< bool >("isData")},
     era{iConfig.getParameter< std::string >("era")},
     sample_weight{iConfig.getParameter< double >("sample_weight")}
 
 {
+    if(not isData){
+        EDMGenEventInfoToken = consumes< GenEventInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_event_info"));
+        //EDMGenRunInfoToken = consumes< GenRunInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_run_info"));
+    }
     // now do what ever initialization is needed
     tree = fs->make< TTree >("MET_tree", "MET_tree");
+
+    sumw = fs->make< TH1D >("sum_of_genweights", "sum_of_genweights", 1, 0, 2);
+    sumw->Sumw2();
 
     InitSingleVar("evt_run", "L");
     InitSingleVar("evt_lumi", "L");
@@ -201,14 +197,17 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     iEvent.getByToken(EDMPFMETOriginalToken, hPFMETsOriginal);
 
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
-    iEvent.getByToken(EDMGenEventInfoToken, hGenEventInfo);
-
+    float generator_weight = 1.0;
+    if(not isData){
+        iEvent.getByToken(EDMGenEventInfoToken, hGenEventInfo);
+        auto geneventinfo = *hGenEventInfo;
+        generator_weight = geneventinfo.weight();
+    }
     // edm::Handle< GenRunInfoProduct > hGenRunInfo;
     // iEvent.getByToken(EDMGenRunInfoToken, hGenRunInfo);
 
     auto pfmet        = hPFMETs->at(0);
     auto genmet       = pfmet.genMET();
-    auto geneventinfo = *hGenEventInfo;
     // auto genruninfo = *hGenRunInfo;
 
     FillSingleVar("evt_run", long(iEvent.id().run()));
@@ -216,7 +215,7 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("evt_lumi", long(iEvent.luminosityBlock()));
 
     FillSingleVar("sample_weight", float(sample_weight));
-    FillSingleVar("generator_weight", float(geneventinfo.weight()));
+    FillSingleVar("generator_weight", generator_weight);
     // FillSingleVar("cross_section", float(genruninfo.crossSection()));
 
     FillSingleVar("pt_pfmet_raw", float(pfmet.corPt(pat::MET::Raw)));
@@ -284,10 +283,12 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // std::cout << "pt_pfmet_t1smear_jes_down: " << pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1Smear) << std::endl;
     // std::cout << "pt_pfmet_t1smear_jer_up: " << pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1Smear) << std::endl;
     // std::cout << "pt_pfmet_t1smear_jer_down: " << pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1Smear) << std::endl;
-
-    FillSingleVar("pt_genmet", float(genmet->pt()));
+    if(not isData){
+        FillSingleVar("pt_genmet", float(genmet->pt()));
+    }
 
     tree->Fill();
+    sumw->Fill(1.0, generator_weight);
 }
 
 // ------------ method called once each job just before starting event loop  ------------
