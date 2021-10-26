@@ -35,7 +35,6 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
-//#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
 #include "TTree.h"
 #include "TH1D.h"
@@ -67,7 +66,6 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPFMETOriginalToken;     // PF MET
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPuppiMETOriginalToken;  // PUPPI MET
     edm::EDGetTokenT< GenEventInfoProduct >     EDMGenEventInfoToken;
-    // edm::EDGetTokenT< GenRunInfoProduct >     EDMGenRunInfoToken;
 
     const bool        isData;
     const std::string era;
@@ -101,7 +99,6 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
 {
     if(not isData){
         EDMGenEventInfoToken = consumes< GenEventInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_event_info"));
-        //EDMGenRunInfoToken = consumes< GenRunInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_run_info"));
     }
     // now do what ever initialization is needed
     tree = fs->make< TTree >("MET_tree", "MET_tree");
@@ -115,7 +112,6 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
 
     InitSingleVar("sample_weight", "F");
     InitSingleVar("generator_weight", "F");
-    // InitSingleVar("cross_section", "F");
 
     InitSingleVar("pt_pfmet_raw", "F");
     InitSingleVar("pt_pfmet_raw_jes_up", "F");
@@ -203,12 +199,9 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         auto geneventinfo = *hGenEventInfo;
         generator_weight = geneventinfo.weight();
     }
-    // edm::Handle< GenRunInfoProduct > hGenRunInfo;
-    // iEvent.getByToken(EDMGenRunInfoToken, hGenRunInfo);
 
     auto pfmet        = hPFMETs->at(0);
     auto genmet       = pfmet.genMET();
-    // auto genruninfo = *hGenRunInfo;
 
     FillSingleVar("evt_run", long(iEvent.id().run()));
     FillSingleVar("evt_id", long(iEvent.id().event()));
@@ -216,7 +209,6 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
     FillSingleVar("sample_weight", float(sample_weight));
     FillSingleVar("generator_weight", generator_weight);
-    // FillSingleVar("cross_section", float(genruninfo.crossSection()));
 
     FillSingleVar("pt_pfmet_raw", float(pfmet.corPt(pat::MET::Raw)));
     FillSingleVar("pt_pfmet_raw_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Raw)));
