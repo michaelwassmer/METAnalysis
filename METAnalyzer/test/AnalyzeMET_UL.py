@@ -173,6 +173,7 @@ runMetCorAndUncFromMiniAOD(
         "minEtaThreshold": 2.65,
         "maxEtaThreshold": 3.139,
     },
+    postfix="PF",
 )
 
 runMetCorAndUncFromMiniAOD(
@@ -201,7 +202,7 @@ process.load("METAnalysis.METAnalyzer.METAnalyzer_cfi")
 process.METAnalyzer.isData = cms.bool(options.isData)
 process.METAnalyzer.era = cms.string(options.dataEra)
 process.METAnalyzer.sample_weight = cms.double(options.sampleWeight)
-process.METAnalyzer.met_pf = cms.InputTag("slimmedMETs","",process.name_())
+process.METAnalyzer.met_pf = cms.InputTag("slimmedMETsPF","",process.name_())
 process.METAnalyzer.met_puppi = cms.InputTag("slimmedMETsPuppi","",process.name_())
 process.METAnalyzer.met_pf_original = cms.InputTag("slimmedMETs", "", "@skipCurrentProcess")
 process.METAnalyzer.met_puppi_original = cms.InputTag("slimmedMETsPuppi", "", "@skipCurrentProcess")
