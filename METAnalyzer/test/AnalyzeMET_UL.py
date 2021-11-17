@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
-
+from Configuration.AlCa.autoCond import autoCond
 
 options = VarParsing("analysis")
 options.register(
@@ -54,16 +54,16 @@ if options.maxEvents == -1:  # maxEvents is set in VarParsing class by default t
     options.maxEvents = 1001  # reset for testing
 
 if options.isData:
-    options.globalTag = "106X_dataRun2_v35"
+    options.globalTag = autoCond["run2_data"]#"106X_dataRun2_v35"
 elif not options.isData:
     if "2016preVFP" in options.dataEra:
-        options.globalTag = "106X_mcRun2_asymptotic_preVFP_v11"
+        options.globalTag = autoCond["run2_mc_pre_vfp"]#"106X_mcRun2_asymptotic_preVFP_v11"
     elif "2016postVFP" in options.dataEra:
-        options.globalTag = "106X_mcRun2_asymptotic_v17"
+        options.globalTag = autoCond["run2_mc"]#"106X_mcRun2_asymptotic_v17"
     elif "2017" in options.dataEra:
-        options.globalTag = "106X_mc2017_realistic_v9"
+        options.globalTag = autoCond["phase1_2017_realistic"]#"106X_mc2017_realistic_v9"
     elif "2018" in options.dataEra:
-        options.globalTag = "106X_upgrade2018_realistic_v16_L1v1"
+        options.globalTag = autoCond["phase1_2018_realistic"]#"106X_upgrade2018_realistic_v16_L1v1"
     else:
         raise Exception(
             "dataEra "
