@@ -2,9 +2,9 @@ in_file=$1
 out_dir=$2
 process=$3
 # Raw, T1, T1Smear and Gen
-rootplot rootplot_config.py  $in_file pt_genmet pt_pfmet_raw pt_pfmet_t1 pt_pfmet_t1smear --processors=1 --size=1024x768 --xlabel="#slash{E}_{T}[GeV]" --ylabel="arbitrary units" --legend-location='upper right' --gridx --gridy -e pdf --draw='histe' --output="${out_dir}" --noclean --legend-entries='Gen,Raw,T1,T1Smear' --title="#bf{2018, ${process}, 13 TeV}"
+rootplot rootplot_config.py  $in_file pt_genmet pt_pfmet_raw pt_pfmet_t1 pt_pfmet_t1smear --processors=1 --size=1024x768 -n --xlabel="#slash{E}_{T}[GeV]" --ylabel="arbitrary units" --legend-location='upper right' --gridx --gridy -e pdf --draw='histe' --output="${out_dir}" --noclean --legend-entries='Gen,Raw,T1,T1Smear' --title="#bf{2018, ${process}, 13 TeV}"
 mv ${out_dir}/plot.pdf ${out_dir}/METs.pdf
-rootplot rootplot_config.py  $in_file pt_genmet pt_pfmet_raw pt_pfmet_t1 pt_pfmet_t1smear --processors=1 --size=1024x768 --xlabel="#slash{E}_{T}[GeV]" --ylabel="arbitrary units" --legend-location='upper right' --gridx --gridy -e pdf --draw='histe' --output="${out_dir}" --noclean --legend-entries='Gen,Raw,T1,T1Smear' --title="#bf{2018, ${process}, 13 TeV}" --logy
+rootplot rootplot_config.py  $in_file pt_genmet pt_pfmet_raw pt_pfmet_t1 pt_pfmet_t1smear --processors=1 --size=1024x768 -n --xlabel="#slash{E}_{T}[GeV]" --ylabel="arbitrary units" --legend-location='upper right' --gridx --gridy -e pdf --draw='histe' --output="${out_dir}" --noclean --legend-entries='Gen,Raw,T1,T1Smear' --title="#bf{2018, ${process}, 13 TeV}" --logy
 mv ${out_dir}/plot.pdf ${out_dir}/METs_log.pdf
 rootplot rootplot_config.py  $in_file pt_genmet pt_pfmet_raw pt_pfmet_t1 pt_pfmet_t1smear pt_genmet --ratio=5 --processors=1 --size=1024x768 --xlabel="#slash{E}_{T}[GeV]" --ylabel="ratio to Gen" --legend-location='upper right' --gridx --gridy -e pdf --output="${out_dir}" --noclean --legend-entries='Gen,Raw,T1,T1Smear,bla' --title="#bf{2018, ${process}, 13 TeV}" -m --ymin=0.0 --ymax=2.0
 mv ${out_dir}/plot.pdf ${out_dir}/MET_ratios.pdf
