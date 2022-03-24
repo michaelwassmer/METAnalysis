@@ -187,6 +187,9 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_t1smear_pho_up", "F");
     InitSingleVar("pt_pfmet_t1smear_pho_down", "F");
 
+    // type1 + xy corrected pfmet quantities
+    InitSingleVar("pt_pfmet_t1xy", "F");
+
     // raw puppimet quantities
     InitSingleVar("pt_puppimet_raw", "F");
     InitSingleVar("pt_puppimet_raw_jes_up", "F");
@@ -333,6 +336,9 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_t1_tau_down", float(pfmet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_pho_up", float(pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_pho_down", float(pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1)));
+
+    // type1 + xy corrected pfmet quantities
+    FillSingleVar("pt_pfmet_t1xy", float(pfmet.corPt(pat::MET::Type1XY)));
 
     // type1 + smearing corrected pfmet quantities
     FillSingleVar("pt_pfmet_t1smear", float(pfmet.corPt(pat::MET::Type1Smear)));
