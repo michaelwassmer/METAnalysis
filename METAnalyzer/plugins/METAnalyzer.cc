@@ -149,6 +149,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_raw_pho_up", "F");
     InitSingleVar("pt_pfmet_raw_pho_down", "F");
 
+    InitSingleVar("phi_pfmet_raw", "F");
+
     // type1 corrected pfmet quantities
     InitSingleVar("pt_pfmet_t1", "F");
     InitSingleVar("pt_pfmet_t1_jes_up", "F");
@@ -167,6 +169,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_t1_tau_down", "F");
     InitSingleVar("pt_pfmet_t1_pho_up", "F");
     InitSingleVar("pt_pfmet_t1_pho_down", "F");
+
+    InitSingleVar("phi_pfmet_t1", "F");
 
     // type1 + smearing corrected pfmet quantities
     InitSingleVar("pt_pfmet_t1smear", "F");
@@ -187,8 +191,12 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_pfmet_t1smear_pho_up", "F");
     InitSingleVar("pt_pfmet_t1smear_pho_down", "F");
 
+    InitSingleVar("phi_pfmet_t1smear", "F");
+
     // type1 + xy corrected pfmet quantities
     InitSingleVar("pt_pfmet_t1xy", "F");
+
+    InitSingleVar("phi_pfmet_t1xy", "F");
 
     // raw puppimet quantities
     InitSingleVar("pt_puppimet_raw", "F");
@@ -209,6 +217,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_puppimet_raw_pho_up", "F");
     InitSingleVar("pt_puppimet_raw_pho_down", "F");
 
+    InitSingleVar("phi_puppimet_raw", "F");
+
     // type1 corrected puppimet quantities
     InitSingleVar("pt_puppimet_t1", "F");
     InitSingleVar("pt_puppimet_t1_jes_up", "F");
@@ -227,6 +237,13 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_puppimet_t1_tau_down", "F");
     InitSingleVar("pt_puppimet_t1_pho_up", "F");
     InitSingleVar("pt_puppimet_t1_pho_down", "F");
+
+    InitSingleVar("phi_puppimet_t1", "F");
+
+    // type1 + xy corrected puppimet quantities
+    InitSingleVar("pt_puppimet_t1xy", "F");
+
+    InitSingleVar("phi_puppimet_t1xy", "F");
 
     // type1 + smearing corrected puppimet quantities
     InitSingleVar("pt_puppimet_t1smear", "F");
@@ -247,8 +264,11 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("pt_puppimet_t1smear_pho_up", "F");
     InitSingleVar("pt_puppimet_t1smear_pho_down", "F");
 
+    InitSingleVar("phi_puppimet_t1smear", "F");
+
     // generator met
     InitSingleVar("pt_genmet", "F");
+    InitSingleVar("phi_genmet", "F");
 }
 
 METAnalyzer::~METAnalyzer()
@@ -318,6 +338,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_raw_pho_up", float(pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Raw)));
     FillSingleVar("pt_pfmet_raw_pho_down", float(pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Raw)));
 
+    FillSingleVar("phi_pfmet_raw", float(pfmet.corPhi(pat::MET::Raw)));
+
     // type1 corrected pfmet quantities
     FillSingleVar("pt_pfmet_t1", float(pfmet.corPt(pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_jes_up", float(pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1)));
@@ -337,8 +359,12 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_t1_pho_up", float(pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1)));
     FillSingleVar("pt_pfmet_t1_pho_down", float(pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1)));
 
+    FillSingleVar("phi_pfmet_t1", float(pfmet.corPhi(pat::MET::Type1)));
+
     // type1 + xy corrected pfmet quantities
     FillSingleVar("pt_pfmet_t1xy", float(pfmet.corPt(pat::MET::Type1XY)));
+
+    FillSingleVar("phi_pfmet_t1xy", float(pfmet.corPhi(pat::MET::Type1XY)));
 
     // type1 + smearing corrected pfmet quantities
     FillSingleVar("pt_pfmet_t1smear", float(pfmet.corPt(pat::MET::Type1Smear)));
@@ -359,6 +385,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_pfmet_t1smear_pho_up", float(pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1Smear)));
     FillSingleVar("pt_pfmet_t1smear_pho_down", float(pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1Smear)));
 
+    FillSingleVar("phi_pfmet_t1smear", float(pfmet.corPhi(pat::MET::Type1Smear)));
+
     // raw puppimet quantities
     FillSingleVar("pt_puppimet_raw", float(puppimet.corPt(pat::MET::Raw)));
     FillSingleVar("pt_puppimet_raw_jes_up", float(puppimet.shiftedPt(pat::MET::JetEnUp, pat::MET::Raw)));
@@ -377,6 +405,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_puppimet_raw_tau_down", float(puppimet.shiftedPt(pat::MET::TauEnDown, pat::MET::Raw)));
     FillSingleVar("pt_puppimet_raw_pho_up", float(puppimet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Raw)));
     FillSingleVar("pt_puppimet_raw_pho_down", float(puppimet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Raw)));
+
+    FillSingleVar("phi_puppimet_raw", float(puppimet.corPhi(pat::MET::Raw)));
 
     // type1 corrected puppimet quantities
     FillSingleVar("pt_puppimet_t1", float(puppimet.corPt(pat::MET::Type1)));
@@ -397,6 +427,13 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_puppimet_t1_pho_up", float(puppimet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1)));
     FillSingleVar("pt_puppimet_t1_pho_down", float(puppimet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1)));
 
+    FillSingleVar("phi_puppimet_t1", float(puppimet.corPhi(pat::MET::Type1)));
+
+    // type1 + xy corrected puppimet quantities
+    FillSingleVar("pt_puppimet_t1xy", float(puppimet.corPt(pat::MET::Type1XY)));
+
+    FillSingleVar("phi_puppimet_t1xy", float(puppimet.corPhi(pat::MET::Type1XY)));
+
     // type1 + smearing corrected puppimet quantities
     FillSingleVar("pt_puppimet_t1smear", float(puppimet.corPt(pat::MET::Type1Smear)));
     FillSingleVar("pt_puppimet_t1smear_jes_up", float(puppimet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear)));
@@ -416,9 +453,12 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("pt_puppimet_t1smear_pho_up", float(puppimet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1Smear)));
     FillSingleVar("pt_puppimet_t1smear_pho_down", float(puppimet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1Smear)));
 
+    FillSingleVar("phi_puppimet_t1smear", float(puppimet.corPhi(pat::MET::Type1Smear)));
+
     // generator met
     if(not isData){
         FillSingleVar("pt_genmet", float(genmet->pt()));
+        FillSingleVar("phi_genmet", float(genmet->phi()));
     }
 
     // fill output tree
