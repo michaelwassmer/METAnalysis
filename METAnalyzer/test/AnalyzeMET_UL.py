@@ -154,6 +154,10 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = options.globalTag
 process.load("CondCore.CondDB.CondDB_cfi")
 
+####################### Event selection #############################
+
+process.load("METAnalysis.METAnalyzer.EventSelection_cfi")
+
 ####################### MET stuff #############################
 
 from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import (
@@ -173,6 +177,8 @@ runMetCorAndUncFromMiniAOD(
         "minEtaThreshold": 2.65,
         "maxEtaThreshold": 3.139,
     },
+    campaign="UL",
+    era=options.dataEra,
     postfix="PF",
 )
 
@@ -182,16 +188,20 @@ runMetCorAndUncFromMiniAOD(
     metType="Puppi",
     postfix="Puppi",
     jetFlavor="AK4PFPuppi",
+    campaign="UL",
+    era=options.dataEra,
 )
 
 process.puppiNoLep.useExistingWeights = True
 process.puppi.useExistingWeights = True
 
 ####################### MET filters ##########################
-#process.load("MonoTop.METFilter.METFilter_cfi")
-#if options.isData:
-#    process.METFilter.filterData = cms.InputTag("TriggerResults","","RECO")
-#    process.METFilter.filterNames += ["Flag_eeBadScFilter"]
+process.load("MonoTop.METFilter.METFilter_cfi")
+if options.isData:
+    process.METFilter.filterData = cms.InputTag("TriggerResults","","RECO")
+
+if "2018" in options.dataEra or "2017" in options.dataEra:
+    process.METFilter.filterNames += ["Flag_ecalBadCalibFilter"]
 #print process.METFilter.filterNames
 
 ####################### configure process #############################
@@ -242,9 +252,21 @@ process.content = cms.EDAnalyzer("EventContentAnalyzer")
 # met sequence to recalculate MET if running in scheduled mode
 #process.met = cms.Path(process.fullPatMetSequence)
 
+# met filters
+process.met = cms.Path()
+process.met *= process.METFilter
+#process.met *= process.countLoosePatMuons
+#process.met *= process.countTightPatMuons
+process.met *= process.METAnalyzer
+
+process.muons = cms.Task()
+process.muons.add(process.tightPatMuons)
+process.muons.add(process.loosePatMuons)
+
 # write the events which pass the skimming selection and only keep the specified file content
-process.final = cms.EndPath(process.METAnalyzer)
+#process.final = cms.EndPath(process.TFileService)
 
 # associate the patAlgosToolsTask to the Endpath for unscheduled mode
-process.final.associate(process.patAlgosToolsTask)
+process.met.associate(process.patAlgosToolsTask)
+process.met.associate(process.muons)
 #print(process.dumpPython())
