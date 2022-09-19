@@ -86,7 +86,7 @@ for row in reader:
             repl("THEREQUESTNAME", row["name"] + "_" + str(i) + "_" + str(l), out)
             repl("THEINPUTDATASET", dataset, out)
             repl("DATAERA", row["run"], out)
-            repl("GLOBALTAG", row["globalTag"], out)
+            #repl("GLOBALTAG", row["globalTag"], out)
             repl("ISDATA", row["isData"], out)
             # repl('GENERATORNAME',row['generator'],out)
             repl('SAMPLEWEIGHT',row['weight'],out)
