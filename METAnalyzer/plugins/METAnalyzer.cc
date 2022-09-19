@@ -36,6 +36,8 @@
 
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
+#include "DataFormats/VertexReco/interface/Vertex.h"
+
 #include "TTree.h"
 #include "TH1D.h"
 
@@ -66,6 +68,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPFMETOriginalToken;     // PF MET
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPuppiMETOriginalToken;  // PUPPI MET
     edm::EDGetTokenT< GenEventInfoProduct >     EDMGenEventInfoToken;
+    edm::EDGetTokenT< std::vector< reco::Vertex > > EDMPrimaryVertexToken; // Primary Vertices
 
     // some useful information to keep
     const bool        isData;
@@ -100,6 +103,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     EDMPuppiMETToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi"))},
     EDMPFMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_pf_original"))},
     EDMPuppiMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi_original"))},
+    EDMPrimaryVertexToken{consumes< std::vector< reco::Vertex > >(iConfig.getParameter< edm::InputTag >("primary_vertices"))},
     isData{iConfig.getParameter< bool >("isData")},
     era{iConfig.getParameter< std::string >("era")},
     sample_weight{iConfig.getParameter< double >("sample_weight")}
@@ -269,6 +273,10 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     // generator met
     InitSingleVar("pt_genmet", "F");
     InitSingleVar("phi_genmet", "F");
+
+    // number of primary vertices
+    InitSingleVar("n_primary_vertices", "I");
+    InitSingleVar("n_good_primary_vertices", "I");
 }
 
 METAnalyzer::~METAnalyzer()
@@ -294,6 +302,10 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     edm::Handle< std::vector< pat::MET > > hPuppiMETs;
     iEvent.getByToken(EDMPuppiMETToken, hPuppiMETs);
 
+    // get primary vertex collection
+    edm::Handle< std::vector< reco::Vertex > > hPVs;
+    iEvent.getByToken(EDMPrimaryVertexToken, hPVs);
+
     // get generator event info object to retrieve generator weight
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
     float generator_weight = 1.0;
@@ -314,6 +326,17 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("evt_run", long(iEvent.id().run()));
     FillSingleVar("evt_id", long(iEvent.id().event()));
     FillSingleVar("evt_lumi", long(iEvent.luminosityBlock()));
+
+    // number of primary vertices
+    int n_primary_vertices = hPVs->size();
+    FillSingleVar("n_primary_vertices", n_primary_vertices);
+    // number of "good" primary vertices
+    int n_good_primary_vertices = 0;
+    for (unsigned i = 0; i < hPVs->size(); i++) {
+        if ((*hPVs)[i].ndof() > 4 && (fabs((*hPVs)[i].z()) <= 24.) && (fabs((*hPVs)[i].position().rho()) <= 2.0))
+            n_good_primary_vertices += 1;
+    }
+    FillSingleVar("n_good_primary_vertices", n_good_primary_vertices);
 
     // necessary weights for sample normalization
     FillSingleVar("sample_weight", float(sample_weight));
