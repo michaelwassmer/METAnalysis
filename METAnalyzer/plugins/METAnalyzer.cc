@@ -94,6 +94,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     void InitSingleVar(std::string name, std::string type);
     // functions to write singleton variables of different types into the containers defined above
     void FillSingleVar(std::string name, float value);
+    void FillSingleVar(std::string name, double value);
     void FillSingleVar(std::string name, int value);
     void FillSingleVar(std::string name, long value);
 };
@@ -537,6 +538,8 @@ void METAnalyzer::InitSingleVar(std::string name, std::string type)
 
 // functions to fill singleton variables of different types
 void METAnalyzer::FillSingleVar(std::string name, float value) { *single_float_vars[name] = value; }
+// doubles are automatically converted to float since double precision is never needed for this use case
+void METAnalyzer::FillSingleVar(std::string name, double value) { *single_float_vars[name] = static_cast<float>(value); }
 void METAnalyzer::FillSingleVar(std::string name, int value) { *single_int_vars[name] = value; }
 void METAnalyzer::FillSingleVar(std::string name, long value) { *single_long_vars[name] = value; }
 
