@@ -255,6 +255,7 @@ process.content = cms.EDAnalyzer("EventContentAnalyzer")
 # met filters
 process.met = cms.Path()
 process.met *= process.METFilter
+#process.met *= process.HLTFilter
 #process.met *= process.countLoosePatMuons
 #process.met *= process.countTightPatMuons
 process.met *= process.METAnalyzer

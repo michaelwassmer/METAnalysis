@@ -27,3 +27,9 @@ countLoosePatMuons = cms.EDFilter("PATCandViewCountFilter",
     maxNumber = cms.uint32(2),
     src = cms.InputTag("loosePatMuons")
 )
+
+import HLTrigger.HLTfilters.hltHighLevel_cfi as hlt
+HLTFilter = hlt.hltHighLevel.clone(
+    HLTPaths = ['HLT_IsoMu*','HLT_PFMETNoMu*'],
+    throw = True
+)
