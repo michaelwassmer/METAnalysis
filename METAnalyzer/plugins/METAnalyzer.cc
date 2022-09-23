@@ -40,6 +40,7 @@
 
 #include "TTree.h"
 #include "TH1D.h"
+#include "TLorentzVector.h"
 
 //
 // class declaration
@@ -88,15 +89,24 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     std::map< std::string, std::unique_ptr< int > >   single_int_vars;
     std::map< std::string, std::unique_ptr< long > >  single_long_vars;
 
+    // containers to hold vector variables within an event
+    std::map< std::string, std::unique_ptr< std::vector< float > > > vector_float_vars;
+    std::map< std::string, std::unique_ptr< std::vector< int > > > vector_int_vars;
+    std::map< std::string, std::unique_ptr< std::vector< TLorentzVector > > > vector_tlorentz_vars;
+
     // ----------member functions ---------------------------
 
     // function to initialize a singleton variable
     void InitSingleVar(std::string name, std::string type);
+    void InitVectorVar(std::string name, std::string type, size_t n_elements = 5);
     // functions to write singleton variables of different types into the containers defined above
     void FillSingleVar(std::string name, float value);
     void FillSingleVar(std::string name, double value);
     void FillSingleVar(std::string name, int value);
     void FillSingleVar(std::string name, long value);
+    void FillVectorVar(std::string name, std::vector< float > vector);
+    void FillVectorVar(std::string name, std::vector< int > vector);
+    void FillVectorVar(std::string name, std::vector< TLorentzVector > vector);
 };
 
 METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
@@ -278,6 +288,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     // number of primary vertices
     InitSingleVar("n_primary_vertices", "I");
     InitSingleVar("n_good_primary_vertices", "I");
+
 }
 
 METAnalyzer::~METAnalyzer()
@@ -523,11 +534,11 @@ void METAnalyzer::InitSingleVar(std::string name, std::string type)
         tree->Branch(name.c_str(), single_float_vars[name].get(), (name + "/F").c_str());
     }
     else if (type == "I") {
-        single_int_vars.insert({name, std::unique_ptr< int >(new int(-999.0))});
+        single_int_vars.insert({name, std::unique_ptr< int >(new int(-999))});
         tree->Branch(name.c_str(), single_int_vars[name].get(), (name + "/I").c_str());
     }
     else if (type == "L") {
-        single_long_vars.insert({name, std::unique_ptr< long >(new long(-999.0))});
+        single_long_vars.insert({name, std::unique_ptr< long >(new long(-999))});
         tree->Branch(name.c_str(), single_long_vars[name].get(), (name + "/L").c_str());
     }
     else {
@@ -542,6 +553,49 @@ void METAnalyzer::FillSingleVar(std::string name, float value) { *single_float_v
 void METAnalyzer::FillSingleVar(std::string name, double value) { *single_float_vars[name] = static_cast<float>(value); }
 void METAnalyzer::FillSingleVar(std::string name, int value) { *single_int_vars[name] = value; }
 void METAnalyzer::FillSingleVar(std::string name, long value) { *single_long_vars[name] = value; }
+
+// function to initialize vector variables
+// reserve 100 elements for the std::vectors before creating the branches to make sure that the vectors are not reallocated (100 elements should be enough for this use case)
+void METAnalyzer::InitVectorVar(std::string name, std::string type, size_t n_elements)
+{
+    if (type == "F") {
+        vector_float_vars.insert({name, std::unique_ptr< std::vector< float > >(new std::vector< float >(n_elements, -999.0))});
+        vector_float_vars[name]->reserve(100);
+        tree->Branch(name.c_str(), vector_float_vars[name].get());
+    }
+    else if (type == "I") {
+        vector_int_vars.insert({name, std::unique_ptr< std::vector < int > >(new std::vector< int >(n_elements, -999))});
+        vector_int_vars[name]->reserve(100);
+        tree->Branch(name.c_str(), vector_int_vars[name].get());
+    }
+    else if (type ==  "TLorentzVector") {
+        vector_tlorentz_vars.insert({name, std::unique_ptr< std::vector< TLorentzVector > >(new std::vector< TLorentzVector >(n_elements, {0., 0., 0., 0.}))});
+        vector_tlorentz_vars[name]->reserve(100);
+        // because TLorentzVector has a custom streamer, splitting level < 0 has to be set according to ROOT page
+        tree->Branch(name.c_str(), vector_tlorentz_vars[name].get(), 32000, -1);
+    }
+    else {
+        std::cout << "currently only vector of float (F), int (I), and TLorentzVector types are supported at the moment" << std::endl;
+        throw std::exception();
+    }
+}
+
+void METAnalyzer::FillVectorVar(std::string name, std::vector< float > vector)
+{
+    vector_float_vars[name]->resize(vector.size());
+    *vector_float_vars[name] = vector;
+}
+void METAnalyzer::FillVectorVar(std::string name, std::vector< int > vector)
+{
+    vector_int_vars[name]->resize(vector.size());
+    *vector_int_vars[name] = vector;
+}
+void METAnalyzer::FillVectorVar(std::string name, std::vector< TLorentzVector > vector)
+{
+    vector_tlorentz_vars[name]->resize(vector.size());
+    *vector_tlorentz_vars[name] = vector;
+}
+
 
 // define this as a plug-in
 DEFINE_FWK_MODULE(METAnalyzer);
