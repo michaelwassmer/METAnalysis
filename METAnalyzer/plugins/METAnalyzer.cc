@@ -30,6 +30,7 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 
 #include "DataFormats/PatCandidates/interface/MET.h"
+//#include "DataFormats/PatCandidates/interface/Muon.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -40,7 +41,7 @@
 
 #include "TTree.h"
 #include "TH1D.h"
-#include "TLorentzVector.h"
+#include "Math/Vector4D.h"
 
 //
 // class declaration
@@ -70,6 +71,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPuppiMETOriginalToken;  // PUPPI MET
     edm::EDGetTokenT< GenEventInfoProduct >     EDMGenEventInfoToken;
     edm::EDGetTokenT< std::vector< reco::Vertex > > EDMPrimaryVertexToken; // Primary Vertices
+    //edm::EDGetTokenT< std::vector< pat::Muon > > EDMLooseMuonToken; // Muon Collection
 
     // some useful information to keep
     const bool        isData;
@@ -92,7 +94,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     // containers to hold vector variables within an event
     std::map< std::string, std::unique_ptr< std::vector< float > > > vector_float_vars;
     std::map< std::string, std::unique_ptr< std::vector< int > > > vector_int_vars;
-    std::map< std::string, std::unique_ptr< std::vector< TLorentzVector > > > vector_tlorentz_vars;
+    std::map< std::string, std::unique_ptr< std::vector< ROOT::Math::XYZTVector > > > vector_tlorentz_vars;
 
     // ----------member functions ---------------------------
 
@@ -106,7 +108,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     void FillSingleVar(std::string name, long value);
     void FillVectorVar(std::string name, std::vector< float > vector);
     void FillVectorVar(std::string name, std::vector< int > vector);
-    void FillVectorVar(std::string name, std::vector< TLorentzVector > vector);
+    void FillVectorVar(std::string name, std::vector< ROOT::Math::XYZTVector > vector);
 };
 
 METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
@@ -115,6 +117,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     EDMPFMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_pf_original"))},
     EDMPuppiMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi_original"))},
     EDMPrimaryVertexToken{consumes< std::vector< reco::Vertex > >(iConfig.getParameter< edm::InputTag >("primary_vertices"))},
+    //EDMLooseMuonToken{consumes< std::vector< pat::Muon > >(iConfig.getParameter< edm::InputTag >("loose_muons"))},
     isData{iConfig.getParameter< bool >("isData")},
     era{iConfig.getParameter< std::string >("era")},
     sample_weight{iConfig.getParameter< double >("sample_weight")}
@@ -289,6 +292,9 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("n_primary_vertices", "I");
     InitSingleVar("n_good_primary_vertices", "I");
 
+    // loose muons
+    //InitVectorVar("loose_muons_p4", "LorentzVector");
+
 }
 
 METAnalyzer::~METAnalyzer()
@@ -317,6 +323,10 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // get primary vertex collection
     edm::Handle< std::vector< reco::Vertex > > hPVs;
     iEvent.getByToken(EDMPrimaryVertexToken, hPVs);
+
+    // get muon collection
+    //edm::Handle< std::vector< pat::Muon > > hLooseMuons;
+    //iEvent.getByToken(EDMLooseMuonToken, hLooseMuons);
 
     // get generator event info object to retrieve generator weight
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
@@ -496,6 +506,10 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         FillSingleVar("phi_genmet", genmet->phi());
     }
 
+    //std::vector< ROOT::Math::XYZTVector > loose_muons_p4;
+    //for(auto muon : *hLooseMuons){loose_muons_p4.push_back(muon.p4());}
+    //FillVectorVar("loose_muons_p4", loose_muons_p4);
+
     // fill output tree
     tree->Fill();
     // fill generator weight into histogram containing the sum of generator weights
@@ -568,14 +582,13 @@ void METAnalyzer::InitVectorVar(std::string name, std::string type, size_t n_ele
         vector_int_vars[name]->reserve(100);
         tree->Branch(name.c_str(), vector_int_vars[name].get());
     }
-    else if (type ==  "TLorentzVector") {
-        vector_tlorentz_vars.insert({name, std::unique_ptr< std::vector< TLorentzVector > >(new std::vector< TLorentzVector >(n_elements, {0., 0., 0., 0.}))});
+    else if (type ==  "LorentzVector") {
+        vector_tlorentz_vars.insert({name, std::unique_ptr< std::vector< ROOT::Math::XYZTVector > >(new std::vector< ROOT::Math::XYZTVector >(n_elements, {0., 0., 0., 0.}))});
         vector_tlorentz_vars[name]->reserve(100);
-        // because TLorentzVector has a custom streamer, splitting level < 0 has to be set according to ROOT page
-        tree->Branch(name.c_str(), vector_tlorentz_vars[name].get(), 32000, -1);
+        tree->Branch(name.c_str(), vector_tlorentz_vars[name].get());
     }
     else {
-        std::cout << "currently only vector of float (F), int (I), and TLorentzVector types are supported at the moment" << std::endl;
+        std::cout << "currently only vector of float (F), int (I), and LorentzVector types are supported at the moment" << std::endl;
         throw std::exception();
     }
 }
@@ -590,7 +603,7 @@ void METAnalyzer::FillVectorVar(std::string name, std::vector< int > vector)
     vector_int_vars[name]->resize(vector.size());
     *vector_int_vars[name] = vector;
 }
-void METAnalyzer::FillVectorVar(std::string name, std::vector< TLorentzVector > vector)
+void METAnalyzer::FillVectorVar(std::string name, std::vector< ROOT::Math::XYZTVector > vector)
 {
     vector_tlorentz_vars[name]->resize(vector.size());
     *vector_tlorentz_vars[name] = vector;

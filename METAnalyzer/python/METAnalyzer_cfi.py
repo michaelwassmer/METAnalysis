@@ -10,5 +10,6 @@ METAnalyzer = cms.EDAnalyzer(
     met_pf_original=cms.InputTag("slimmedMETs"),
     met_puppi_original=cms.InputTag("slimmedMETsPuppi"),
     gen_event_info=cms.InputTag("generator"),
-    primary_vertices=cms.InputTag("offlineSlimmedPrimaryVertices")
+    primary_vertices=cms.InputTag("offlineSlimmedPrimaryVertices"),
+    #loose_muons=cms.InputTag("loosePatMuons")
 )
