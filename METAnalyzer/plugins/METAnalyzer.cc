@@ -72,11 +72,14 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< GenEventInfoProduct >     EDMGenEventInfoToken;
     edm::EDGetTokenT< std::vector< reco::Vertex > > EDMPrimaryVertexToken; // Primary Vertices
     //edm::EDGetTokenT< std::vector< pat::Muon > > EDMLooseMuonToken; // Muon Collection
+    edm::EDGetTokenT< std::vector< bool > > filterDecisionsToken;
+    edm::EDGetTokenT< std::vector< std::string > > filterNamesToken;
 
     // some useful information to keep
     const bool        isData;
     const std::string era;
     const double      sample_weight;
+    const bool write_triggers;
 
     // file service object to write output root file
     edm::Service< TFileService > fs;
@@ -90,6 +93,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     std::map< std::string, std::unique_ptr< float > > single_float_vars;
     std::map< std::string, std::unique_ptr< int > >   single_int_vars;
     std::map< std::string, std::unique_ptr< long > >  single_long_vars;
+    std::map< std::string, std::unique_ptr< bool > >   single_bool_vars;
 
     // containers to hold vector variables within an event
     std::map< std::string, std::unique_ptr< std::vector< float > > > vector_float_vars;
@@ -106,6 +110,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     void FillSingleVar(std::string name, double value);
     void FillSingleVar(std::string name, int value);
     void FillSingleVar(std::string name, long value);
+    void FillSingleVar(std::string name, bool value);
     void FillVectorVar(std::string name, std::vector< float > vector);
     void FillVectorVar(std::string name, std::vector< int > vector);
     void FillVectorVar(std::string name, std::vector< ROOT::Math::XYZTVector > vector);
@@ -120,14 +125,21 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     //EDMLooseMuonToken{consumes< std::vector< pat::Muon > >(iConfig.getParameter< edm::InputTag >("loose_muons"))},
     isData{iConfig.getParameter< bool >("isData")},
     era{iConfig.getParameter< std::string >("era")},
-    sample_weight{iConfig.getParameter< double >("sample_weight")}
+    sample_weight{iConfig.getParameter< double >("sample_weight")},
+    write_triggers{iConfig.getParameter< bool >("write_triggers")}
 
 {
     // now do what ever initialization is needed
 
     // only read generator event info if we deal with simulation
-    if(not isData){
+    if(not isData) {
         EDMGenEventInfoToken = consumes< GenEventInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_event_info"));
+    }
+
+    // only read trigger decisions if requested
+    if (write_triggers) {
+        filterNamesToken = consumes< std::vector< std::string > >(iConfig.getParameter< edm::InputTag >("filterNames"));
+        filterDecisionsToken = consumes< std::vector< bool > >(iConfig.getParameter< edm::InputTag >("filterDecisions"));
     }
 
     // output tree to write to file
@@ -310,7 +322,6 @@ METAnalyzer::~METAnalyzer()
 // ------------ method called for each event  ------------
 void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    using namespace edm;
 
     // get pfmet pat::MET object
     edm::Handle< std::vector< pat::MET > > hPFMETs;
@@ -323,6 +334,14 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // get primary vertex collection
     edm::Handle< std::vector< reco::Vertex > > hPVs;
     iEvent.getByToken(EDMPrimaryVertexToken, hPVs);
+
+    // get filter decisions (if desired)
+    edm::Handle< std::vector< std::string > > hFilterNames;
+    edm::Handle< std::vector< bool > > hFilterDecisions;
+    if (write_triggers) {
+        iEvent.getByToken(filterNamesToken, hFilterNames);
+        iEvent.getByToken(filterDecisionsToken, hFilterDecisions);
+    }
 
     // get muon collection
     //edm::Handle< std::vector< pat::Muon > > hLooseMuons;
@@ -506,6 +525,15 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         FillSingleVar("phi_genmet", genmet->phi());
     }
 
+    // filter/trigger decisions
+    if (write_triggers) {
+        for (size_t i=0; i < hFilterDecisions->size();i++) {
+            size_t index = hFilterNames->at(i).rfind("_v");
+            std::string triggername = hFilterNames->at(i).substr(0, index);
+            FillSingleVar(triggername, hFilterDecisions->at(i));
+        }
+    }
+
     //std::vector< ROOT::Math::XYZTVector > loose_muons_p4;
     //for(auto muon : *hLooseMuons){loose_muons_p4.push_back(muon.p4());}
     //FillVectorVar("loose_muons_p4", loose_muons_p4);
@@ -567,8 +595,16 @@ void METAnalyzer::InitSingleVar(std::string name, std::string type)
         single_long_vars.insert({name, std::unique_ptr< long >(new long(-999))});
         tree->Branch(name.c_str(), single_long_vars[name].get(), (name + "/L").c_str());
     }
+    else if (type == "B") {
+        if (single_bool_vars.find(name) != single_bool_vars.end()) {
+            std::cout << "variable >>>" << name << "<<< already initialized so cannot be initialized again" << std::endl;
+            throw std::exception();
+        }
+        single_bool_vars.insert({name, std::unique_ptr< bool >(new bool(false))});
+        tree->Branch(name.c_str(), single_bool_vars[name].get(), (name + "/B").c_str());
+    }
     else {
-        std::cout << "currently only float (F), int (I), and long(L) types are supported at the moment" << std::endl;
+        std::cout << "currently only float (F), int (I), long(L), and bool (B) types are supported at the moment" << std::endl;
         throw std::exception();
     }
 }
@@ -606,6 +642,14 @@ void METAnalyzer::FillSingleVar(std::string name, long value)
     //    throw std::exception();
     //}
     *single_long_vars[name] = value;
+}
+void METAnalyzer::FillSingleVar(std::string name, bool value)
+{
+    if (single_bool_vars.find(name) == single_bool_vars.end()) {
+        std::cout << "boolean variable >>>" << name << "<<< not initialized, therefore initializing it for you" << std::endl;
+        InitSingleVar(name, "B");
+    }
+    *single_bool_vars[name] = value;
 }
 
 // function to initialize vector variables

@@ -204,6 +204,9 @@ if "2018" in options.dataEra or "2017" in options.dataEra:
     process.METFilter.filterNames += ["Flag_ecalBadCalibFilter"]
 #print process.METFilter.filterNames
 
+####################### HLT triggers ##########################
+process.load("MonoTop.METFilter.TriggerFilter_cfi")
+
 ####################### configure process #############################
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outName+".root") )
@@ -256,6 +259,7 @@ process.content = cms.EDAnalyzer("EventContentAnalyzer")
 process.met = cms.Path()
 process.met *= process.METFilter
 #process.met *= process.HLTFilter
+#process.met *= process.TriggerFilter
 #process.met *= process.countLoosePatMuons
 #process.met *= process.countTightPatMuons
 process.met *= process.METAnalyzer

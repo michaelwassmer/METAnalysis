@@ -11,5 +11,8 @@ METAnalyzer = cms.EDAnalyzer(
     met_puppi_original=cms.InputTag("slimmedMETsPuppi"),
     gen_event_info=cms.InputTag("generator"),
     primary_vertices=cms.InputTag("offlineSlimmedPrimaryVertices"),
+    write_triggers=cms.bool(False),
+    filterNames=cms.InputTag("TriggerFilter:filters"),
+    filterDecisions=cms.InputTag("TriggerFilter:decisions"),
     #loose_muons=cms.InputTag("loosePatMuons")
 )
