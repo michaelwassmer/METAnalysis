@@ -544,14 +544,26 @@ void METAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 void METAnalyzer::InitSingleVar(std::string name, std::string type)
 {
     if (type == "F") {
+        if (single_float_vars.find(name) != single_float_vars.end()) {
+            std::cout << "variable >>>" << name << "<<< already initialized so cannot be initialized again" << std::endl;
+            throw std::exception();
+        }
         single_float_vars.insert({name, std::unique_ptr< float >(new float(-999.0))});
         tree->Branch(name.c_str(), single_float_vars[name].get(), (name + "/F").c_str());
     }
     else if (type == "I") {
+        if (single_int_vars.find(name) != single_int_vars.end()) {
+            std::cout << "variable >>>" << name << "<<< already initialized so cannot be initialized again" << std::endl;
+            throw std::exception();
+        }
         single_int_vars.insert({name, std::unique_ptr< int >(new int(-999))});
         tree->Branch(name.c_str(), single_int_vars[name].get(), (name + "/I").c_str());
     }
     else if (type == "L") {
+        if (single_long_vars.find(name) != single_long_vars.end()) {
+            std::cout << "variable >>>" << name << "<<< already initialized so cannot be initialized again" << std::endl;
+            throw std::exception();
+        }
         single_long_vars.insert({name, std::unique_ptr< long >(new long(-999))});
         tree->Branch(name.c_str(), single_long_vars[name].get(), (name + "/L").c_str());
     }
@@ -562,27 +574,67 @@ void METAnalyzer::InitSingleVar(std::string name, std::string type)
 }
 
 // functions to fill singleton variables of different types
-void METAnalyzer::FillSingleVar(std::string name, float value) { *single_float_vars[name] = value; }
+void METAnalyzer::FillSingleVar(std::string name, float value)
+{
+    //if (single_float_vars.find(name) == single_float_vars.end()) {
+    //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
+    //    throw std::exception();
+    //}
+    *single_float_vars[name] = value;
+}
 // doubles are automatically converted to float since double precision is never needed for this use case
-void METAnalyzer::FillSingleVar(std::string name, double value) { *single_float_vars[name] = static_cast<float>(value); }
-void METAnalyzer::FillSingleVar(std::string name, int value) { *single_int_vars[name] = value; }
-void METAnalyzer::FillSingleVar(std::string name, long value) { *single_long_vars[name] = value; }
+void METAnalyzer::FillSingleVar(std::string name, double value)
+{
+    //if (single_float_vars.find(name) == single_float_vars.end()) {
+    //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
+    //    throw std::exception();
+    //}
+    *single_float_vars[name] = static_cast<float>(value);
+}
+void METAnalyzer::FillSingleVar(std::string name, int value)
+{
+    //if (single_int_vars.find(name) == single_int_vars.end()) {
+    //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
+    //    throw std::exception();
+    //}
+    *single_int_vars[name] = value;
+}
+void METAnalyzer::FillSingleVar(std::string name, long value)
+{
+    //if (single_long_vars.find(name) == single_long_vars.end()) {
+    //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
+    //    throw std::exception();
+    //}
+    *single_long_vars[name] = value;
+}
 
 // function to initialize vector variables
 // reserve 100 elements for the std::vectors before creating the branches to make sure that the vectors are not reallocated (100 elements should be enough for this use case)
 void METAnalyzer::InitVectorVar(std::string name, std::string type, size_t n_elements)
 {
     if (type == "F") {
+        if (vector_float_vars.find(name) != vector_float_vars.end()) {
+            std::cout << "variable >>>" << name << "<<< already initialized so cannot be initialized again" << std::endl;
+            throw std::exception();
+        }
         vector_float_vars.insert({name, std::unique_ptr< std::vector< float > >(new std::vector< float >(n_elements, -999.0))});
         vector_float_vars[name]->reserve(100);
         tree->Branch(name.c_str(), vector_float_vars[name].get());
     }
     else if (type == "I") {
+        if (vector_int_vars.find(name) != vector_int_vars.end()) {
+            std::cout << "variable >>>" << name << "<<< already initialized so cannot be initialized again" << std::endl;
+            throw std::exception();
+        }
         vector_int_vars.insert({name, std::unique_ptr< std::vector < int > >(new std::vector< int >(n_elements, -999))});
         vector_int_vars[name]->reserve(100);
         tree->Branch(name.c_str(), vector_int_vars[name].get());
     }
     else if (type ==  "LorentzVector") {
+        if (vector_tlorentz_vars.find(name) != vector_tlorentz_vars.end()) {
+            std::cout << "variable >>>" << name << "<<< already initialized so cannot be initialized again" << std::endl;
+            throw std::exception();
+        }
         vector_tlorentz_vars.insert({name, std::unique_ptr< std::vector< ROOT::Math::XYZTVector > >(new std::vector< ROOT::Math::XYZTVector >(n_elements, {0., 0., 0., 0.}))});
         vector_tlorentz_vars[name]->reserve(100);
         tree->Branch(name.c_str(), vector_tlorentz_vars[name].get());
@@ -595,16 +647,28 @@ void METAnalyzer::InitVectorVar(std::string name, std::string type, size_t n_ele
 
 void METAnalyzer::FillVectorVar(std::string name, std::vector< float > vector)
 {
+    //if (vector_float_vars.find(name) == vector_float_vars.end()) {
+    //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
+    //    throw std::exception();
+    //}
     vector_float_vars[name]->resize(vector.size());
     *vector_float_vars[name] = vector;
 }
 void METAnalyzer::FillVectorVar(std::string name, std::vector< int > vector)
 {
+    //if (vector_int_vars.find(name) == vector_int_vars.end()) {
+    //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
+    //    throw std::exception();
+    //}
     vector_int_vars[name]->resize(vector.size());
     *vector_int_vars[name] = vector;
 }
 void METAnalyzer::FillVectorVar(std::string name, std::vector< ROOT::Math::XYZTVector > vector)
 {
+    //if (vector_tlorentz_vars.find(name) == vector_tlorentz_vars.end()) {
+    //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
+    //    throw std::exception();
+    //}
     vector_tlorentz_vars[name]->resize(vector.size());
     *vector_tlorentz_vars[name] = vector;
 }
