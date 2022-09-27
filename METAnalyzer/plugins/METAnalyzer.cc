@@ -81,6 +81,31 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     const double      sample_weight;
     const bool write_triggers;
 
+    // containers to bookkeep all desired MET variations and uncertainties
+    const std::vector< std::string > met_types{"pfmet","puppimet"};
+    const std::map< std::string, pat::MET::METCorrectionLevel > met_corr_levels{
+        {"raw",pat::MET::Raw},
+        {"t1",pat::MET::Type1},
+        {"t1smear",pat::MET::Type1Smear},
+        {"t1xy",pat::MET::Type1XY}
+    };
+    const std::map< std::string, pat::MET::METUncertainty > met_uncs{
+        {"jes_up",pat::MET::JetEnUp},
+        {"jer_up",pat::MET::JetResUp},
+        {"uncen_up",pat::MET::UnclusteredEnUp},
+        {"ele_up",pat::MET::ElectronEnUp},
+        {"muo_up",pat::MET::MuonEnUp},
+        {"tau_up",pat::MET::TauEnUp},
+        {"pho_up",pat::MET::PhotonEnUp},
+        {"jes_down",pat::MET::JetEnDown},
+        {"jer_down",pat::MET::JetResDown},
+        {"uncen_down",pat::MET::UnclusteredEnDown},
+        {"ele_down",pat::MET::ElectronEnDown},
+        {"muo_down",pat::MET::MuonEnDown},
+        {"tau_down",pat::MET::TauEnDown},
+        {"pho_down",pat::MET::PhotonEnDown}
+    };
+
     // file service object to write output root file
     edm::Service< TFileService > fs;
 
@@ -99,6 +124,11 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     std::map< std::string, std::unique_ptr< std::vector< float > > > vector_float_vars;
     std::map< std::string, std::unique_ptr< std::vector< int > > > vector_int_vars;
     std::map< std::string, std::unique_ptr< std::vector< ROOT::Math::XYZTVector > > > vector_tlorentz_vars;
+
+    // some useful strings
+    const std::string separator = "_";
+    const std::string pt = "pt";
+    const std::string phi = "phi";
 
     // ----------member functions ---------------------------
 
@@ -160,141 +190,16 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("sample_weight", "F");
     InitSingleVar("generator_weight", "F");
 
-    // raw pfmet quantities
-    InitSingleVar("pt_pfmet_raw", "F");
-    InitSingleVar("pt_pfmet_raw_jes_up", "F");
-    InitSingleVar("pt_pfmet_raw_jes_down", "F");
-    InitSingleVar("pt_pfmet_raw_jer_up", "F");
-    InitSingleVar("pt_pfmet_raw_jer_down", "F");
-    InitSingleVar("pt_pfmet_raw_jersmear_up", "F");
-    InitSingleVar("pt_pfmet_raw_jersmear_down", "F");
-    InitSingleVar("pt_pfmet_raw_uncen_up", "F");
-    InitSingleVar("pt_pfmet_raw_uncen_down", "F");
-    InitSingleVar("pt_pfmet_raw_ele_up", "F");
-    InitSingleVar("pt_pfmet_raw_ele_down", "F");
-    InitSingleVar("pt_pfmet_raw_muo_up", "F");
-    InitSingleVar("pt_pfmet_raw_muo_down", "F");
-    InitSingleVar("pt_pfmet_raw_tau_up", "F");
-    InitSingleVar("pt_pfmet_raw_tau_down", "F");
-    InitSingleVar("pt_pfmet_raw_pho_up", "F");
-    InitSingleVar("pt_pfmet_raw_pho_down", "F");
-
-    InitSingleVar("phi_pfmet_raw", "F");
-
-    // type1 corrected pfmet quantities
-    InitSingleVar("pt_pfmet_t1", "F");
-    InitSingleVar("pt_pfmet_t1_jes_up", "F");
-    InitSingleVar("pt_pfmet_t1_jes_down", "F");
-    InitSingleVar("pt_pfmet_t1_jer_up", "F");
-    InitSingleVar("pt_pfmet_t1_jer_down", "F");
-    InitSingleVar("pt_pfmet_t1_jersmear_up", "F");
-    InitSingleVar("pt_pfmet_t1_jersmear_down", "F");
-    InitSingleVar("pt_pfmet_t1_uncen_up", "F");
-    InitSingleVar("pt_pfmet_t1_uncen_down", "F");
-    InitSingleVar("pt_pfmet_t1_ele_up", "F");
-    InitSingleVar("pt_pfmet_t1_ele_down", "F");
-    InitSingleVar("pt_pfmet_t1_muo_up", "F");
-    InitSingleVar("pt_pfmet_t1_muo_down", "F");
-    InitSingleVar("pt_pfmet_t1_tau_up", "F");
-    InitSingleVar("pt_pfmet_t1_tau_down", "F");
-    InitSingleVar("pt_pfmet_t1_pho_up", "F");
-    InitSingleVar("pt_pfmet_t1_pho_down", "F");
-
-    InitSingleVar("phi_pfmet_t1", "F");
-
-    // type1 + smearing corrected pfmet quantities
-    InitSingleVar("pt_pfmet_t1smear", "F");
-    InitSingleVar("pt_pfmet_t1smear_jes_up", "F");
-    InitSingleVar("pt_pfmet_t1smear_jes_down", "F");
-    InitSingleVar("pt_pfmet_t1smear_jer_up", "F");
-    InitSingleVar("pt_pfmet_t1smear_jer_down", "F");
-    InitSingleVar("pt_pfmet_t1smear_jersmear_up", "F");
-    InitSingleVar("pt_pfmet_t1smear_jersmear_down", "F");
-    InitSingleVar("pt_pfmet_t1smear_uncen_up", "F");
-    InitSingleVar("pt_pfmet_t1smear_uncen_down", "F");
-    InitSingleVar("pt_pfmet_t1smear_ele_up", "F");
-    InitSingleVar("pt_pfmet_t1smear_ele_down", "F");
-    InitSingleVar("pt_pfmet_t1smear_muo_up", "F");
-    InitSingleVar("pt_pfmet_t1smear_muo_down", "F");
-    InitSingleVar("pt_pfmet_t1smear_tau_up", "F");
-    InitSingleVar("pt_pfmet_t1smear_tau_down", "F");
-    InitSingleVar("pt_pfmet_t1smear_pho_up", "F");
-    InitSingleVar("pt_pfmet_t1smear_pho_down", "F");
-
-    InitSingleVar("phi_pfmet_t1smear", "F");
-
-    // type1 + xy corrected pfmet quantities
-    InitSingleVar("pt_pfmet_t1xy", "F");
-
-    InitSingleVar("phi_pfmet_t1xy", "F");
-
-    // raw puppimet quantities
-    InitSingleVar("pt_puppimet_raw", "F");
-    InitSingleVar("pt_puppimet_raw_jes_up", "F");
-    InitSingleVar("pt_puppimet_raw_jes_down", "F");
-    InitSingleVar("pt_puppimet_raw_jer_up", "F");
-    InitSingleVar("pt_puppimet_raw_jer_down", "F");
-    InitSingleVar("pt_puppimet_raw_jersmear_up", "F");
-    InitSingleVar("pt_puppimet_raw_jersmear_down", "F");
-    InitSingleVar("pt_puppimet_raw_uncen_up", "F");
-    InitSingleVar("pt_puppimet_raw_uncen_down", "F");
-    InitSingleVar("pt_puppimet_raw_ele_up", "F");
-    InitSingleVar("pt_puppimet_raw_ele_down", "F");
-    InitSingleVar("pt_puppimet_raw_muo_up", "F");
-    InitSingleVar("pt_puppimet_raw_muo_down", "F");
-    InitSingleVar("pt_puppimet_raw_tau_up", "F");
-    InitSingleVar("pt_puppimet_raw_tau_down", "F");
-    InitSingleVar("pt_puppimet_raw_pho_up", "F");
-    InitSingleVar("pt_puppimet_raw_pho_down", "F");
-
-    InitSingleVar("phi_puppimet_raw", "F");
-
-    // type1 corrected puppimet quantities
-    InitSingleVar("pt_puppimet_t1", "F");
-    InitSingleVar("pt_puppimet_t1_jes_up", "F");
-    InitSingleVar("pt_puppimet_t1_jes_down", "F");
-    InitSingleVar("pt_puppimet_t1_jer_up", "F");
-    InitSingleVar("pt_puppimet_t1_jer_down", "F");
-    InitSingleVar("pt_puppimet_t1_jersmear_up", "F");
-    InitSingleVar("pt_puppimet_t1_jersmear_down", "F");
-    InitSingleVar("pt_puppimet_t1_uncen_up", "F");
-    InitSingleVar("pt_puppimet_t1_uncen_down", "F");
-    InitSingleVar("pt_puppimet_t1_ele_up", "F");
-    InitSingleVar("pt_puppimet_t1_ele_down", "F");
-    InitSingleVar("pt_puppimet_t1_muo_up", "F");
-    InitSingleVar("pt_puppimet_t1_muo_down", "F");
-    InitSingleVar("pt_puppimet_t1_tau_up", "F");
-    InitSingleVar("pt_puppimet_t1_tau_down", "F");
-    InitSingleVar("pt_puppimet_t1_pho_up", "F");
-    InitSingleVar("pt_puppimet_t1_pho_down", "F");
-
-    InitSingleVar("phi_puppimet_t1", "F");
-
-    // type1 + xy corrected puppimet quantities
-    InitSingleVar("pt_puppimet_t1xy", "F");
-
-    InitSingleVar("phi_puppimet_t1xy", "F");
-
-    // type1 + smearing corrected puppimet quantities
-    InitSingleVar("pt_puppimet_t1smear", "F");
-    InitSingleVar("pt_puppimet_t1smear_jes_up", "F");
-    InitSingleVar("pt_puppimet_t1smear_jes_down", "F");
-    InitSingleVar("pt_puppimet_t1smear_jer_up", "F");
-    InitSingleVar("pt_puppimet_t1smear_jer_down", "F");
-    InitSingleVar("pt_puppimet_t1smear_jersmear_up", "F");
-    InitSingleVar("pt_puppimet_t1smear_jersmear_down", "F");
-    InitSingleVar("pt_puppimet_t1smear_uncen_up", "F");
-    InitSingleVar("pt_puppimet_t1smear_uncen_down", "F");
-    InitSingleVar("pt_puppimet_t1smear_ele_up", "F");
-    InitSingleVar("pt_puppimet_t1smear_ele_down", "F");
-    InitSingleVar("pt_puppimet_t1smear_muo_up", "F");
-    InitSingleVar("pt_puppimet_t1smear_muo_down", "F");
-    InitSingleVar("pt_puppimet_t1smear_tau_up", "F");
-    InitSingleVar("pt_puppimet_t1smear_tau_down", "F");
-    InitSingleVar("pt_puppimet_t1smear_pho_up", "F");
-    InitSingleVar("pt_puppimet_t1smear_pho_down", "F");
-
-    InitSingleVar("phi_puppimet_t1smear", "F");
+    // all kinds of MET
+    for (const std::string& met_type : met_types) {
+        for (const auto& met_corr_level : met_corr_levels) {
+            InitSingleVar(pt+separator+met_type+separator+met_corr_level.first, "F");
+            InitSingleVar(phi+separator+met_type+separator+met_corr_level.first, "F");
+            for (const auto& met_unc : met_uncs) {
+                InitSingleVar(pt+separator+met_type+separator+met_corr_level.first+separator+met_unc.first, "F");
+            }
+        }
+    }
 
     // generator met
     InitSingleVar("pt_genmet", "F");
@@ -383,141 +288,21 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("sample_weight", sample_weight);
     FillSingleVar("generator_weight", generator_weight);
 
-    // raw pfmet quantities
-    FillSingleVar("pt_pfmet_raw", pfmet.corPt(pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_jes_up", pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_jes_down", pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_jer_up", pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_jer_down", pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Raw));
-    // FillSingleVar("pt_pfmet_raw_jersmear_up", pfmet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Raw));
-    // FillSingleVar("pt_pfmet_raw_jersmear_down", pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_uncen_up", pfmet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_uncen_down", pfmet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_ele_up", pfmet.shiftedPt(pat::MET::ElectronEnUp, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_ele_down", pfmet.shiftedPt(pat::MET::ElectronEnDown, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_muo_up", pfmet.shiftedPt(pat::MET::MuonEnUp, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_muo_down", pfmet.shiftedPt(pat::MET::MuonEnDown, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_tau_up", pfmet.shiftedPt(pat::MET::TauEnUp, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_tau_down", pfmet.shiftedPt(pat::MET::TauEnDown, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_pho_up", pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Raw));
-    FillSingleVar("pt_pfmet_raw_pho_down", pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Raw));
-
-    FillSingleVar("phi_pfmet_raw", pfmet.corPhi(pat::MET::Raw));
-
-    // type1 corrected pfmet quantities
-    FillSingleVar("pt_pfmet_t1", pfmet.corPt(pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_jes_up", pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_jes_down", pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_jer_up", pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_jer_down", pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1));
-    // FillSingleVar("pt_pfmet_t1_jersmear_up", pfmet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1));
-    // FillSingleVar("pt_pfmet_t1_jersmear_down", pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_uncen_up", pfmet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_uncen_down", pfmet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_ele_up", pfmet.shiftedPt(pat::MET::ElectronEnUp, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_ele_down", pfmet.shiftedPt(pat::MET::ElectronEnDown, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_muo_up", pfmet.shiftedPt(pat::MET::MuonEnUp, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_muo_down", pfmet.shiftedPt(pat::MET::MuonEnDown, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_tau_up", pfmet.shiftedPt(pat::MET::TauEnUp, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_tau_down", pfmet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_pho_up", pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1));
-    FillSingleVar("pt_pfmet_t1_pho_down", pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1));
-
-    FillSingleVar("phi_pfmet_t1", pfmet.corPhi(pat::MET::Type1));
-
-    // type1 + xy corrected pfmet quantities
-    FillSingleVar("pt_pfmet_t1xy", pfmet.corPt(pat::MET::Type1XY));
-
-    FillSingleVar("phi_pfmet_t1xy", pfmet.corPhi(pat::MET::Type1XY));
-
-    // type1 + smearing corrected pfmet quantities
-    FillSingleVar("pt_pfmet_t1smear", pfmet.corPt(pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_jes_up", pfmet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_jes_down", pfmet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_jer_up", pfmet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_jer_down", pfmet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1Smear));
-    // FillSingleVar("pt_pfmet_t1smear_jersmear_up", pfmet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1Smear));
-    // FillSingleVar("pt_pfmet_t1smear_jersmear_down", pfmet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_uncen_up", pfmet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_uncen_down", pfmet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_ele_up", pfmet.shiftedPt(pat::MET::ElectronEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_ele_down", pfmet.shiftedPt(pat::MET::ElectronEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_muo_up", pfmet.shiftedPt(pat::MET::MuonEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_muo_down", pfmet.shiftedPt(pat::MET::MuonEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_tau_up", pfmet.shiftedPt(pat::MET::TauEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_tau_down", pfmet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_pho_up", pfmet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_pfmet_t1smear_pho_down", pfmet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1Smear));
-
-    FillSingleVar("phi_pfmet_t1smear", pfmet.corPhi(pat::MET::Type1Smear));
-
-    // raw puppimet quantities
-    FillSingleVar("pt_puppimet_raw", puppimet.corPt(pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_jes_up", puppimet.shiftedPt(pat::MET::JetEnUp, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_jes_down", puppimet.shiftedPt(pat::MET::JetEnDown, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_jer_up", puppimet.shiftedPt(pat::MET::JetResUp, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_jer_down", puppimet.shiftedPt(pat::MET::JetResDown, pat::MET::Raw));
-    // FillSingleVar("pt_puppimet_raw_jersmear_up", puppimet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Raw));
-    // FillSingleVar("pt_puppimet_raw_jersmear_down", puppimet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_uncen_up", puppimet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_uncen_down", puppimet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_ele_up", puppimet.shiftedPt(pat::MET::ElectronEnUp, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_ele_down", puppimet.shiftedPt(pat::MET::ElectronEnDown, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_muo_up", puppimet.shiftedPt(pat::MET::MuonEnUp, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_muo_down", puppimet.shiftedPt(pat::MET::MuonEnDown, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_tau_up", puppimet.shiftedPt(pat::MET::TauEnUp, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_tau_down", puppimet.shiftedPt(pat::MET::TauEnDown, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_pho_up", puppimet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Raw));
-    FillSingleVar("pt_puppimet_raw_pho_down", puppimet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Raw));
-
-    FillSingleVar("phi_puppimet_raw", puppimet.corPhi(pat::MET::Raw));
-
-    // type1 corrected puppimet quantities
-    FillSingleVar("pt_puppimet_t1", puppimet.corPt(pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_jes_up", puppimet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_jes_down", puppimet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_jer_up", puppimet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_jer_down", puppimet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1));
-    // FillSingleVar("pt_puppimet_t1_jersmear_up", puppimet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1));
-    // FillSingleVar("pt_puppimet_t1_jersmear_down", puppimet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_uncen_up", puppimet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_uncen_down", puppimet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_ele_up", puppimet.shiftedPt(pat::MET::ElectronEnUp, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_ele_down", puppimet.shiftedPt(pat::MET::ElectronEnDown, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_muo_up", puppimet.shiftedPt(pat::MET::MuonEnUp, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_muo_down", puppimet.shiftedPt(pat::MET::MuonEnDown, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_tau_up", puppimet.shiftedPt(pat::MET::TauEnUp, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_tau_down", puppimet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_pho_up", puppimet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1));
-    FillSingleVar("pt_puppimet_t1_pho_down", puppimet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1));
-
-    FillSingleVar("phi_puppimet_t1", puppimet.corPhi(pat::MET::Type1));
-
-    // type1 + xy corrected puppimet quantities
-    FillSingleVar("pt_puppimet_t1xy", puppimet.corPt(pat::MET::Type1XY));
-
-    FillSingleVar("phi_puppimet_t1xy", puppimet.corPhi(pat::MET::Type1XY));
-
-    // type1 + smearing corrected puppimet quantities
-    FillSingleVar("pt_puppimet_t1smear", puppimet.corPt(pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_jes_up", puppimet.shiftedPt(pat::MET::JetEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_jes_down", puppimet.shiftedPt(pat::MET::JetEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_jer_up", puppimet.shiftedPt(pat::MET::JetResUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_jer_down", puppimet.shiftedPt(pat::MET::JetResDown, pat::MET::Type1Smear));
-    // FillSingleVar("pt_puppimet_t1smear_jersmear_up", puppimet.shiftedPt(pat::MET::JetResUpSmear,pat::MET::Type1Smear));
-    // FillSingleVar("pt_puppimet_t1smear_jersmear_down", puppimet.shiftedPt(pat::MET::JetResDownSmear,pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_uncen_up", puppimet.shiftedPt(pat::MET::UnclusteredEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_uncen_down", puppimet.shiftedPt(pat::MET::UnclusteredEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_ele_up", puppimet.shiftedPt(pat::MET::ElectronEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_ele_down", puppimet.shiftedPt(pat::MET::ElectronEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_muo_up", puppimet.shiftedPt(pat::MET::MuonEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_muo_down", puppimet.shiftedPt(pat::MET::MuonEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_tau_up", puppimet.shiftedPt(pat::MET::TauEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_tau_down", puppimet.shiftedPt(pat::MET::TauEnDown, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_pho_up", puppimet.shiftedPt(pat::MET::PhotonEnUp, pat::MET::Type1Smear));
-    FillSingleVar("pt_puppimet_t1smear_pho_down", puppimet.shiftedPt(pat::MET::PhotonEnDown, pat::MET::Type1Smear));
-
-    FillSingleVar("phi_puppimet_t1smear", puppimet.corPhi(pat::MET::Type1Smear));
+    // all kinds of MET
+    for (const std::string& met_type : met_types) {
+        pat::MET met;
+        if (met_type.find("pfmet")!=std::string::npos) met = pfmet;
+        else if (met_type.find("puppimet")!=std::string::npos) met = puppimet;
+        for (const auto& met_corr_level : met_corr_levels) {
+            ROOT::Math::XYZTVector met_p4 = met.corP4(met_corr_level.second);
+            FillSingleVar(pt+separator+met_type+separator+met_corr_level.first, met_p4.pt());
+            FillSingleVar(phi+separator+met_type+separator+met_corr_level.first, met_p4.phi());
+            for (const auto& met_unc : met_uncs) {
+                ROOT::Math::XYZTVector met_p4 = met.shiftedP4(met_unc.second, met_corr_level.second);
+                FillSingleVar(pt+separator+met_type+separator+met_corr_level.first+separator+met_unc.first, met_p4.pt());
+            }
+        }
+    }
 
     // generator met
     if(not isData){
