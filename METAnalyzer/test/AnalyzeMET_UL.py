@@ -262,11 +262,16 @@ process.met *= process.METFilter
 #process.met *= process.TriggerFilter
 #process.met *= process.countLoosePatMuons
 #process.met *= process.countTightPatMuons
+#process.met *= process.countLoosePatElectrons
 process.met *= process.METAnalyzer
 
 process.muons = cms.Task()
 process.muons.add(process.tightPatMuons)
 process.muons.add(process.loosePatMuons)
+
+#process.electrons = cms.Task()
+#process.electrons.add(process.loosePatElectrons)
+#process.electrons.add(process.tightPatElectrons)
 
 # write the events which pass the skimming selection and only keep the specified file content
 #process.final = cms.EndPath(process.TFileService)
@@ -274,4 +279,5 @@ process.muons.add(process.loosePatMuons)
 # associate the patAlgosToolsTask to the Endpath for unscheduled mode
 process.met.associate(process.patAlgosToolsTask)
 process.met.associate(process.muons)
+#process.met.associate(process.electrons)
 #print(process.dumpPython())
