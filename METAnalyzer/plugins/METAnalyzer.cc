@@ -30,7 +30,7 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 
 #include "DataFormats/PatCandidates/interface/MET.h"
-//#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -71,7 +71,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< std::vector< pat::MET > > EDMPuppiMETOriginalToken;  // PUPPI MET
     edm::EDGetTokenT< GenEventInfoProduct >     EDMGenEventInfoToken;
     edm::EDGetTokenT< std::vector< reco::Vertex > > EDMPrimaryVertexToken; // Primary Vertices
-    //edm::EDGetTokenT< std::vector< pat::Muon > > EDMLooseMuonToken; // Muon Collection
+    edm::EDGetTokenT< std::vector< pat::Muon > > EDMLooseMuonToken; // Muon Collection
     edm::EDGetTokenT< std::vector< bool > > filterDecisionsToken;
     edm::EDGetTokenT< std::vector< std::string > > filterNamesToken;
 
@@ -82,7 +82,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     const bool write_triggers;
 
     // containers to bookkeep all desired MET variations and uncertainties
-    const std::vector< std::string > met_types{"pfmet","puppimet"};
+    const std::vector< std::string > met_types{"pfmet","puppimet","pfmetnomu","puppimetnomu"};
     const std::map< std::string, pat::MET::METCorrectionLevel > met_corr_levels{
         {"raw",pat::MET::Raw},
         {"t1",pat::MET::Type1},
@@ -152,7 +152,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     EDMPFMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_pf_original"))},
     EDMPuppiMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi_original"))},
     EDMPrimaryVertexToken{consumes< std::vector< reco::Vertex > >(iConfig.getParameter< edm::InputTag >("primary_vertices"))},
-    //EDMLooseMuonToken{consumes< std::vector< pat::Muon > >(iConfig.getParameter< edm::InputTag >("loose_muons"))},
+    EDMLooseMuonToken{consumes< std::vector< pat::Muon > >(iConfig.getParameter< edm::InputTag >("loose_muons"))},
     isData{iConfig.getParameter< bool >("isData")},
     era{iConfig.getParameter< std::string >("era")},
     sample_weight{iConfig.getParameter< double >("sample_weight")},
@@ -210,7 +210,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("n_good_primary_vertices", "I");
 
     // loose muons
-    //InitVectorVar("loose_muons_p4", "LorentzVector");
+    InitSingleVar("n_loose_muons", "I");
+    InitVectorVar("p4_loose_muons", "LorentzVector");
 
 }
 
@@ -249,8 +250,8 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     }
 
     // get muon collection
-    //edm::Handle< std::vector< pat::Muon > > hLooseMuons;
-    //iEvent.getByToken(EDMLooseMuonToken, hLooseMuons);
+    edm::Handle< std::vector< pat::Muon > > hLooseMuons;
+    iEvent.getByToken(EDMLooseMuonToken, hLooseMuons);
 
     // get generator event info object to retrieve generator weight
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
@@ -288,6 +289,10 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillSingleVar("sample_weight", sample_weight);
     FillSingleVar("generator_weight", generator_weight);
 
+    // sum of all muon four vectors for metnomu calculation
+    ROOT::Math::XYZTVector muons_p4_sum{0., 0., 0., 0.};
+    for (const pat::Muon& muon : *hLooseMuons) muons_p4_sum += muon.p4();
+
     // all kinds of MET
     for (const std::string& met_type : met_types) {
         pat::MET met;
@@ -295,10 +300,16 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         else if (met_type.find("puppimet")!=std::string::npos) met = puppimet;
         for (const auto& met_corr_level : met_corr_levels) {
             ROOT::Math::XYZTVector met_p4 = met.corP4(met_corr_level.second);
+            if (met_type.find("nomu")!=std::string::npos) {
+                met_p4 += muons_p4_sum;
+            }
             FillSingleVar(pt+separator+met_type+separator+met_corr_level.first, met_p4.pt());
             FillSingleVar(phi+separator+met_type+separator+met_corr_level.first, met_p4.phi());
             for (const auto& met_unc : met_uncs) {
                 ROOT::Math::XYZTVector met_p4 = met.shiftedP4(met_unc.second, met_corr_level.second);
+                if (met_type.find("nomu")!=std::string::npos) {
+                    met_p4 += muons_p4_sum;
+                }
                 FillSingleVar(pt+separator+met_type+separator+met_corr_level.first+separator+met_unc.first, met_p4.pt());
             }
         }
@@ -319,9 +330,12 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         }
     }
 
-    //std::vector< ROOT::Math::XYZTVector > loose_muons_p4;
-    //for(auto muon : *hLooseMuons){loose_muons_p4.push_back(muon.p4());}
-    //FillVectorVar("loose_muons_p4", loose_muons_p4);
+    // loose muons
+    std::vector< ROOT::Math::XYZTVector > loose_muons_p4;
+    for(const pat::Muon& muon : *hLooseMuons){loose_muons_p4.push_back(muon.p4());}
+    FillVectorVar("p4_loose_muons", loose_muons_p4);
+    int n_loose_muons = hLooseMuons->size();
+    FillSingleVar("n_loose_muons", n_loose_muons);
 
     // fill output tree
     tree->Fill();
