@@ -31,6 +31,7 @@
 
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -72,6 +73,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< GenEventInfoProduct >     EDMGenEventInfoToken;
     edm::EDGetTokenT< std::vector< reco::Vertex > > EDMPrimaryVertexToken; // Primary Vertices
     edm::EDGetTokenT< std::vector< pat::Muon > > EDMLooseMuonToken; // Muon Collection
+    edm::EDGetTokenT< std::vector< pat::Electron > > EDMLooseElectronToken; // Muon Collection
     edm::EDGetTokenT< std::vector< bool > > filterDecisionsToken;
     edm::EDGetTokenT< std::vector< std::string > > filterNamesToken;
 
@@ -153,6 +155,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     EDMPuppiMETOriginalToken{consumes< std::vector< pat::MET > >(iConfig.getParameter< edm::InputTag >("met_puppi_original"))},
     EDMPrimaryVertexToken{consumes< std::vector< reco::Vertex > >(iConfig.getParameter< edm::InputTag >("primary_vertices"))},
     EDMLooseMuonToken{consumes< std::vector< pat::Muon > >(iConfig.getParameter< edm::InputTag >("loose_muons"))},
+    EDMLooseElectronToken{consumes< std::vector< pat::Electron > >(iConfig.getParameter< edm::InputTag >("loose_electrons"))},
     isData{iConfig.getParameter< bool >("isData")},
     era{iConfig.getParameter< std::string >("era")},
     sample_weight{iConfig.getParameter< double >("sample_weight")},
@@ -213,6 +216,10 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     InitSingleVar("n_loose_muons", "I");
     InitVectorVar("p4_loose_muons", "LorentzVector");
 
+    // loose electrons
+    InitSingleVar("n_loose_electrons", "I");
+    InitVectorVar("p4_loose_electrons", "LorentzVector");
+
 }
 
 METAnalyzer::~METAnalyzer()
@@ -252,6 +259,10 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // get muon collection
     edm::Handle< std::vector< pat::Muon > > hLooseMuons;
     iEvent.getByToken(EDMLooseMuonToken, hLooseMuons);
+
+    // get electron collection
+    edm::Handle< std::vector< pat::Electron > > hLooseElectrons;
+    iEvent.getByToken(EDMLooseElectronToken, hLooseElectrons);
 
     // get generator event info object to retrieve generator weight
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
@@ -336,6 +347,13 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillVectorVar("p4_loose_muons", loose_muons_p4);
     int n_loose_muons = hLooseMuons->size();
     FillSingleVar("n_loose_muons", n_loose_muons);
+
+    // loose electrons
+    std::vector< ROOT::Math::XYZTVector > loose_electrons_p4;
+    for(const pat::Electron& electron : *hLooseElectrons){loose_electrons_p4.push_back(electron.p4());}
+    FillVectorVar("p4_loose_electrons", loose_electrons_p4);
+    int n_loose_electrons = hLooseElectrons->size();
+    FillSingleVar("n_loose_electrons", n_loose_electrons);
 
     // fill output tree
     tree->Fill();

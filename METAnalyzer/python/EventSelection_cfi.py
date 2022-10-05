@@ -61,12 +61,14 @@ tightPatPhotons = cleanPatPhotons.clone()
 tightPatPhotons.src = cms.InputTag("slimmedPhotons")
 tightPatPhotons.finalCut = cms.string("pt>=200 & abs(eta)<=2.4 & photonID('cutBasedPhotonID-Fall17-94X-V2-tight') & (abs(superCluster.eta)<1.4442 | abs(superCluster.eta)>1.5660)")
 tightPatPhotons.checkOverlaps.electrons.src = cms.InputTag("loosePatElectrons")
+tightPatPhotons.checkOverlaps.electrons.requireNoOverlaps = cms.bool(True)
 
 # loose photons
 loosePatPhotons = cleanPatPhotons.clone()
 loosePatPhotons.src = cms.InputTag("slimmedPhotons")
 loosePatPhotons.finalCut = cms.string("pt>=20 & abs(eta)<=2.4 & photonID('cutBasedPhotonID-Fall17-94X-V2-loose') & (abs(superCluster.eta)<1.4442 | abs(superCluster.eta)>1.5660)")
 loosePatPhotons.checkOverlaps.electrons.src = cms.InputTag("loosePatElectrons")
+loosePatPhotons.checkOverlaps.electrons.requireNoOverlaps = cms.bool(True)
 
 countTightPatPhotons = cms.EDFilter("PATCandViewCountFilter",
     minNumber = cms.uint32(0),
