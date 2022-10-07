@@ -66,71 +66,58 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     virtual void endJob() override;
 
     // ----------member data ---------------------------
-    edm::EDGetTokenT< std::vector< pat::MET > > EDMPFMETToken;             // PF MET
-    edm::EDGetTokenT< std::vector< pat::MET > > EDMPuppiMETToken;          // PUPPI MET
-    edm::EDGetTokenT< std::vector< pat::MET > > EDMPFMETOriginalToken;     // PF MET
-    edm::EDGetTokenT< std::vector< pat::MET > > EDMPuppiMETOriginalToken;  // PUPPI MET
-    edm::EDGetTokenT< GenEventInfoProduct >     EDMGenEventInfoToken;
-    edm::EDGetTokenT< std::vector< reco::Vertex > > EDMPrimaryVertexToken; // Primary Vertices
-    edm::EDGetTokenT< std::vector< pat::Muon > > EDMLooseMuonToken; // Muon Collection
-    edm::EDGetTokenT< std::vector< pat::Electron > > EDMLooseElectronToken; // Muon Collection
-    edm::EDGetTokenT< std::vector< bool > > filterDecisionsToken;
-    edm::EDGetTokenT< std::vector< std::string > > filterNamesToken;
+    edm::EDGetTokenT< std::vector< pat::MET > >      EDMPFMETToken;             // PF MET
+    edm::EDGetTokenT< std::vector< pat::MET > >      EDMPuppiMETToken;          // PUPPI MET
+    edm::EDGetTokenT< std::vector< pat::MET > >      EDMPFMETOriginalToken;     // PF MET
+    edm::EDGetTokenT< std::vector< pat::MET > >      EDMPuppiMETOriginalToken;  // PUPPI MET
+    edm::EDGetTokenT< GenEventInfoProduct >          EDMGenEventInfoToken;
+    edm::EDGetTokenT< std::vector< reco::Vertex > >  EDMPrimaryVertexToken;  // Primary Vertices
+    edm::EDGetTokenT< std::vector< pat::Muon > >     EDMLooseMuonToken;      // Muon Collection
+    edm::EDGetTokenT< std::vector< pat::Electron > > EDMLooseElectronToken;  // Electron Collection
+    edm::EDGetTokenT< std::vector< bool > >          filterDecisionsToken;
+    edm::EDGetTokenT< std::vector< std::string > >   filterNamesToken;
 
     // some useful information to keep
     const bool        isData;
     const std::string era;
     const double      sample_weight;
-    const bool write_triggers;
+    const bool        write_triggers;
 
     // containers to bookkeep all desired MET variations and uncertainties
-    const std::vector< std::string > met_types{"pfmet","puppimet","pfmetnomu","puppimetnomu"};
+    const std::vector< std::string >                            met_types{"pfmet", "puppimet", "pfmetnomu", "puppimetnomu"};
     const std::map< std::string, pat::MET::METCorrectionLevel > met_corr_levels{
-        {"raw",pat::MET::Raw},
-        {"t1",pat::MET::Type1},
-        {"t1smear",pat::MET::Type1Smear},
-        {"t1xy",pat::MET::Type1XY}
-    };
-    const std::map< std::string, pat::MET::METUncertainty > met_uncs{
-        {"jes_up",pat::MET::JetEnUp},
-        {"jer_up",pat::MET::JetResUp},
-        {"uncen_up",pat::MET::UnclusteredEnUp},
-        {"ele_up",pat::MET::ElectronEnUp},
-        {"muo_up",pat::MET::MuonEnUp},
-        {"tau_up",pat::MET::TauEnUp},
-        {"pho_up",pat::MET::PhotonEnUp},
-        {"jes_down",pat::MET::JetEnDown},
-        {"jer_down",pat::MET::JetResDown},
-        {"uncen_down",pat::MET::UnclusteredEnDown},
-        {"ele_down",pat::MET::ElectronEnDown},
-        {"muo_down",pat::MET::MuonEnDown},
-        {"tau_down",pat::MET::TauEnDown},
-        {"pho_down",pat::MET::PhotonEnDown}
-    };
+        {"raw", pat::MET::Raw}, {"t1", pat::MET::Type1}, {"t1smear", pat::MET::Type1Smear}, {"t1xy", pat::MET::Type1XY}};
+    const std::map< std::string, pat::MET::METUncertainty > met_uncs{{"jes_up", pat::MET::JetEnUp},           {"jer_up", pat::MET::JetResUp},
+                                                                     {"uncen_up", pat::MET::UnclusteredEnUp}, {"ele_up", pat::MET::ElectronEnUp},
+                                                                     {"muo_up", pat::MET::MuonEnUp},          {"tau_up", pat::MET::TauEnUp},
+                                                                     {"pho_up", pat::MET::PhotonEnUp},        {"jes_down", pat::MET::JetEnDown},
+                                                                     {"jer_down", pat::MET::JetResDown},      {"uncen_down", pat::MET::UnclusteredEnDown},
+                                                                     {"ele_down", pat::MET::ElectronEnDown},  {"muo_down", pat::MET::MuonEnDown},
+                                                                     {"tau_down", pat::MET::TauEnDown},       {"pho_down", pat::MET::PhotonEnDown}};
 
     // file service object to write output root file
     edm::Service< TFileService > fs;
 
     // outputs to write into the output root file
     TTree* tree;
-    TH1D* sumw;
-    TH1D* sume;
+    TH1D*  sumw;
+    TH1D*  sume;
 
     // containers to hold singleton variables within an event
     std::map< std::string, std::unique_ptr< float > > single_float_vars;
     std::map< std::string, std::unique_ptr< int > >   single_int_vars;
     std::map< std::string, std::unique_ptr< long > >  single_long_vars;
-    std::map< std::string, std::unique_ptr< bool > >   single_bool_vars;
+    std::map< std::string, std::unique_ptr< bool > >  single_bool_vars;
 
     // containers to hold vector variables within an event
-    std::map< std::string, std::unique_ptr< std::vector< float > > > vector_float_vars;
-    std::map< std::string, std::unique_ptr< std::vector< int > > > vector_int_vars;
+    std::map< std::string, std::unique_ptr< std::vector< float > > >                  vector_float_vars;
+    std::map< std::string, std::unique_ptr< std::vector< int > > >                    vector_int_vars;
     std::map< std::string, std::unique_ptr< std::vector< ROOT::Math::XYZTVector > > > vector_tlorentz_vars;
 
     // some useful strings
     const std::string separator = "_";
-    const std::string pt = "pt";
-    const std::string phi = "phi";
+    const std::string pt        = "pt";
+    const std::string phi       = "phi";
 
     // ----------member functions ---------------------------
 
@@ -165,13 +152,11 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     // now do what ever initialization is needed
 
     // only read generator event info if we deal with simulation
-    if(not isData) {
-        EDMGenEventInfoToken = consumes< GenEventInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_event_info"));
-    }
+    if (not isData) { EDMGenEventInfoToken = consumes< GenEventInfoProduct >(iConfig.getParameter< edm::InputTag >("gen_event_info")); }
 
     // only read trigger decisions if requested
     if (write_triggers) {
-        filterNamesToken = consumes< std::vector< std::string > >(iConfig.getParameter< edm::InputTag >("filterNames"));
+        filterNamesToken     = consumes< std::vector< std::string > >(iConfig.getParameter< edm::InputTag >("filterNames"));
         filterDecisionsToken = consumes< std::vector< bool > >(iConfig.getParameter< edm::InputTag >("filterDecisions"));
     }
 
@@ -196,10 +181,10 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     // all kinds of MET
     for (const std::string& met_type : met_types) {
         for (const auto& met_corr_level : met_corr_levels) {
-            InitSingleVar(pt+separator+met_type+separator+met_corr_level.first, "F");
-            InitSingleVar(phi+separator+met_type+separator+met_corr_level.first, "F");
+            InitSingleVar(pt + separator + met_type + separator + met_corr_level.first, "F");
+            InitSingleVar(phi + separator + met_type + separator + met_corr_level.first, "F");
             for (const auto& met_unc : met_uncs) {
-                InitSingleVar(pt+separator+met_type+separator+met_corr_level.first+separator+met_unc.first, "F");
+                InitSingleVar(pt + separator + met_type + separator + met_corr_level.first + separator + met_unc.first, "F");
             }
         }
     }
@@ -219,7 +204,6 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     // loose electrons
     InitSingleVar("n_loose_electrons", "I");
     InitVectorVar("p4_loose_electrons", "LorentzVector");
-
 }
 
 METAnalyzer::~METAnalyzer()
@@ -235,7 +219,6 @@ METAnalyzer::~METAnalyzer()
 // ------------ method called for each event  ------------
 void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-
     // get pfmet pat::MET object
     edm::Handle< std::vector< pat::MET > > hPFMETs;
     iEvent.getByToken(EDMPFMETToken, hPFMETs);
@@ -250,7 +233,7 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
     // get filter decisions (if desired)
     edm::Handle< std::vector< std::string > > hFilterNames;
-    edm::Handle< std::vector< bool > > hFilterDecisions;
+    edm::Handle< std::vector< bool > >        hFilterDecisions;
     if (write_triggers) {
         iEvent.getByToken(filterNamesToken, hFilterNames);
         iEvent.getByToken(filterDecisionsToken, hFilterDecisions);
@@ -266,19 +249,19 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
     // get generator event info object to retrieve generator weight
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
-    float generator_weight = 1.0;
-    if(not isData){
+    float                              generator_weight = 1.0;
+    if (not isData) {
         iEvent.getByToken(EDMGenEventInfoToken, hGenEventInfo);
         auto geneventinfo = *hGenEventInfo;
-        generator_weight = geneventinfo.weight();
+        generator_weight  = geneventinfo.weight();
     }
 
     // retrieve pfmet pat::MET object
-    auto pfmet        = hPFMETs->at(0);
+    auto pfmet = hPFMETs->at(0);
     // retrieve puppimet pat::MET object
-    auto puppimet        = hPuppiMETs->at(0);
+    auto puppimet = hPuppiMETs->at(0);
     // retrieve genmet object
-    auto genmet       = pfmet.genMET();
+    auto genmet = pfmet.genMET();
 
     // event identification information
     FillSingleVar("evt_run", long(iEvent.id().run()));
@@ -291,8 +274,7 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // number of "good" primary vertices
     int n_good_primary_vertices = 0;
     for (unsigned i = 0; i < hPVs->size(); i++) {
-        if ((*hPVs)[i].ndof() > 4 && (fabs((*hPVs)[i].z()) <= 24.) && (fabs((*hPVs)[i].position().rho()) <= 2.0))
-            n_good_primary_vertices += 1;
+        if ((*hPVs)[i].ndof() > 4 && (fabs((*hPVs)[i].z()) <= 24.) && (fabs((*hPVs)[i].position().rho()) <= 2.0)) n_good_primary_vertices += 1;
     }
     FillSingleVar("n_good_primary_vertices", n_good_primary_vertices);
 
@@ -307,35 +289,33 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // all kinds of MET
     for (const std::string& met_type : met_types) {
         pat::MET met;
-        if (met_type.find("pfmet")!=std::string::npos) met = pfmet;
-        else if (met_type.find("puppimet")!=std::string::npos) met = puppimet;
+        if (met_type.find("pfmet") != std::string::npos)
+            met = pfmet;
+        else if (met_type.find("puppimet") != std::string::npos)
+            met = puppimet;
         for (const auto& met_corr_level : met_corr_levels) {
             ROOT::Math::XYZTVector met_p4 = met.corP4(met_corr_level.second);
-            if (met_type.find("nomu")!=std::string::npos) {
-                met_p4 += muons_p4_sum;
-            }
-            FillSingleVar(pt+separator+met_type+separator+met_corr_level.first, met_p4.pt());
-            FillSingleVar(phi+separator+met_type+separator+met_corr_level.first, met_p4.phi());
+            if (met_type.find("nomu") != std::string::npos) { met_p4 += muons_p4_sum; }
+            FillSingleVar(pt + separator + met_type + separator + met_corr_level.first, met_p4.pt());
+            FillSingleVar(phi + separator + met_type + separator + met_corr_level.first, met_p4.phi());
             for (const auto& met_unc : met_uncs) {
                 ROOT::Math::XYZTVector met_p4 = met.shiftedP4(met_unc.second, met_corr_level.second);
-                if (met_type.find("nomu")!=std::string::npos) {
-                    met_p4 += muons_p4_sum;
-                }
-                FillSingleVar(pt+separator+met_type+separator+met_corr_level.first+separator+met_unc.first, met_p4.pt());
+                if (met_type.find("nomu") != std::string::npos) { met_p4 += muons_p4_sum; }
+                FillSingleVar(pt + separator + met_type + separator + met_corr_level.first + separator + met_unc.first, met_p4.pt());
             }
         }
     }
 
     // generator met
-    if(not isData){
+    if (not isData) {
         FillSingleVar("pt_genmet", genmet->pt());
         FillSingleVar("phi_genmet", genmet->phi());
     }
 
     // filter/trigger decisions
     if (write_triggers) {
-        for (size_t i=0; i < hFilterDecisions->size();i++) {
-            size_t index = hFilterNames->at(i).rfind("_v");
+        for (size_t i = 0; i < hFilterDecisions->size(); i++) {
+            size_t      index       = hFilterNames->at(i).rfind("_v");
             std::string triggername = hFilterNames->at(i).substr(0, index);
             FillSingleVar(triggername, hFilterDecisions->at(i));
         }
@@ -343,14 +323,14 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
     // loose muons
     std::vector< ROOT::Math::XYZTVector > loose_muons_p4;
-    for(const pat::Muon& muon : *hLooseMuons){loose_muons_p4.push_back(muon.p4());}
+    for (const pat::Muon& muon : *hLooseMuons) { loose_muons_p4.push_back(muon.p4()); }
     FillVectorVar("p4_loose_muons", loose_muons_p4);
     int n_loose_muons = hLooseMuons->size();
     FillSingleVar("n_loose_muons", n_loose_muons);
 
     // loose electrons
     std::vector< ROOT::Math::XYZTVector > loose_electrons_p4;
-    for(const pat::Electron& electron : *hLooseElectrons){loose_electrons_p4.push_back(electron.p4());}
+    for (const pat::Electron& electron : *hLooseElectrons) { loose_electrons_p4.push_back(electron.p4()); }
     FillVectorVar("p4_loose_electrons", loose_electrons_p4);
     int n_loose_electrons = hLooseElectrons->size();
     FillSingleVar("n_loose_electrons", n_loose_electrons);
@@ -429,7 +409,7 @@ void METAnalyzer::InitSingleVar(std::string name, std::string type)
 // functions to fill singleton variables of different types
 void METAnalyzer::FillSingleVar(std::string name, float value)
 {
-    //if (single_float_vars.find(name) == single_float_vars.end()) {
+    // if (single_float_vars.find(name) == single_float_vars.end()) {
     //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
     //    throw std::exception();
     //}
@@ -438,15 +418,15 @@ void METAnalyzer::FillSingleVar(std::string name, float value)
 // doubles are automatically converted to float since double precision is never needed for this use case
 void METAnalyzer::FillSingleVar(std::string name, double value)
 {
-    //if (single_float_vars.find(name) == single_float_vars.end()) {
+    // if (single_float_vars.find(name) == single_float_vars.end()) {
     //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
     //    throw std::exception();
     //}
-    *single_float_vars[name] = static_cast<float>(value);
+    *single_float_vars[name] = static_cast< float >(value);
 }
 void METAnalyzer::FillSingleVar(std::string name, int value)
 {
-    //if (single_int_vars.find(name) == single_int_vars.end()) {
+    // if (single_int_vars.find(name) == single_int_vars.end()) {
     //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
     //    throw std::exception();
     //}
@@ -454,7 +434,7 @@ void METAnalyzer::FillSingleVar(std::string name, int value)
 }
 void METAnalyzer::FillSingleVar(std::string name, long value)
 {
-    //if (single_long_vars.find(name) == single_long_vars.end()) {
+    // if (single_long_vars.find(name) == single_long_vars.end()) {
     //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
     //    throw std::exception();
     //}
@@ -470,7 +450,8 @@ void METAnalyzer::FillSingleVar(std::string name, bool value)
 }
 
 // function to initialize vector variables
-// reserve 100 elements for the std::vectors before creating the branches to make sure that the vectors are not reallocated (100 elements should be enough for this use case)
+// reserve 100 elements for the std::vectors before creating the branches to make sure that the vectors are not reallocated (100 elements should be enough for
+// this use case)
 void METAnalyzer::InitVectorVar(std::string name, std::string type, size_t n_elements)
 {
     if (type == "F") {
@@ -487,16 +468,17 @@ void METAnalyzer::InitVectorVar(std::string name, std::string type, size_t n_ele
             std::cout << "variable >>>" << name << "<<< already initialized so cannot be initialized again" << std::endl;
             throw std::exception();
         }
-        vector_int_vars.insert({name, std::unique_ptr< std::vector < int > >(new std::vector< int >(n_elements, -999))});
+        vector_int_vars.insert({name, std::unique_ptr< std::vector< int > >(new std::vector< int >(n_elements, -999))});
         vector_int_vars[name]->reserve(100);
         tree->Branch(name.c_str(), vector_int_vars[name].get());
     }
-    else if (type ==  "LorentzVector") {
+    else if (type == "LorentzVector") {
         if (vector_tlorentz_vars.find(name) != vector_tlorentz_vars.end()) {
             std::cout << "variable >>>" << name << "<<< already initialized so cannot be initialized again" << std::endl;
             throw std::exception();
         }
-        vector_tlorentz_vars.insert({name, std::unique_ptr< std::vector< ROOT::Math::XYZTVector > >(new std::vector< ROOT::Math::XYZTVector >(n_elements, {0., 0., 0., 0.}))});
+        vector_tlorentz_vars.insert(
+            {name, std::unique_ptr< std::vector< ROOT::Math::XYZTVector > >(new std::vector< ROOT::Math::XYZTVector >(n_elements, {0., 0., 0., 0.}))});
         vector_tlorentz_vars[name]->reserve(100);
         tree->Branch(name.c_str(), vector_tlorentz_vars[name].get());
     }
@@ -508,7 +490,7 @@ void METAnalyzer::InitVectorVar(std::string name, std::string type, size_t n_ele
 
 void METAnalyzer::FillVectorVar(std::string name, std::vector< float > vector)
 {
-    //if (vector_float_vars.find(name) == vector_float_vars.end()) {
+    // if (vector_float_vars.find(name) == vector_float_vars.end()) {
     //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
     //    throw std::exception();
     //}
@@ -517,7 +499,7 @@ void METAnalyzer::FillVectorVar(std::string name, std::vector< float > vector)
 }
 void METAnalyzer::FillVectorVar(std::string name, std::vector< int > vector)
 {
-    //if (vector_int_vars.find(name) == vector_int_vars.end()) {
+    // if (vector_int_vars.find(name) == vector_int_vars.end()) {
     //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
     //    throw std::exception();
     //}
@@ -526,14 +508,13 @@ void METAnalyzer::FillVectorVar(std::string name, std::vector< int > vector)
 }
 void METAnalyzer::FillVectorVar(std::string name, std::vector< ROOT::Math::XYZTVector > vector)
 {
-    //if (vector_tlorentz_vars.find(name) == vector_tlorentz_vars.end()) {
+    // if (vector_tlorentz_vars.find(name) == vector_tlorentz_vars.end()) {
     //    std::cout << "variable >>>" << name << "<<< not initialized so cannot yet be filled" << std::endl;
     //    throw std::exception();
     //}
     vector_tlorentz_vars[name]->resize(vector.size());
     *vector_tlorentz_vars[name] = vector;
 }
-
 
 // define this as a plug-in
 DEFINE_FWK_MODULE(METAnalyzer);
