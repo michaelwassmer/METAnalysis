@@ -15,5 +15,7 @@ METAnalyzer = cms.EDAnalyzer(
     filterNames=cms.InputTag("TriggerFilter:filters"),
     filterDecisions=cms.InputTag("TriggerFilter:decisions"),
     loose_muons=cms.InputTag("loosePatMuons"),
-    loose_electrons=cms.InputTag("loosePatElectrons")
+    loose_electrons=cms.InputTag("loosePatElectrons"),
+    tight_muons=cms.InputTag("tightPatMuons"),
+    tight_electrons=cms.InputTag("tightPatElectrons"),
 )

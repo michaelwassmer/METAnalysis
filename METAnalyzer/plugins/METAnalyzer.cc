@@ -74,6 +74,8 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< std::vector< reco::Vertex > >  EDMPrimaryVertexToken;  // Primary Vertices
     edm::EDGetTokenT< std::vector< pat::Muon > >     EDMLooseMuonToken;      // Muon Collection
     edm::EDGetTokenT< std::vector< pat::Electron > > EDMLooseElectronToken;  // Electron Collection
+    edm::EDGetTokenT< std::vector< pat::Muon > >     EDMTightMuonToken;      // Muon Collection
+    edm::EDGetTokenT< std::vector< pat::Electron > > EDMTightElectronToken;  // Electron Collection
     edm::EDGetTokenT< std::vector< bool > >          filterDecisionsToken;
     edm::EDGetTokenT< std::vector< std::string > >   filterNamesToken;
 
@@ -143,6 +145,8 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     EDMPrimaryVertexToken{consumes< std::vector< reco::Vertex > >(iConfig.getParameter< edm::InputTag >("primary_vertices"))},
     EDMLooseMuonToken{consumes< std::vector< pat::Muon > >(iConfig.getParameter< edm::InputTag >("loose_muons"))},
     EDMLooseElectronToken{consumes< std::vector< pat::Electron > >(iConfig.getParameter< edm::InputTag >("loose_electrons"))},
+    EDMTightMuonToken{consumes< std::vector< pat::Muon > >(iConfig.getParameter< edm::InputTag >("tight_muons"))},
+    EDMTightElectronToken{consumes< std::vector< pat::Electron > >(iConfig.getParameter< edm::InputTag >("tight_electrons"))},
     isData{iConfig.getParameter< bool >("isData")},
     era{iConfig.getParameter< std::string >("era")},
     sample_weight{iConfig.getParameter< double >("sample_weight")},
@@ -204,6 +208,14 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     // loose electrons
     InitSingleVar("n_loose_electrons", "I");
     InitVectorVar("p4_loose_electrons", "LorentzVector");
+
+    // tight muons
+    InitSingleVar("n_tight_muons", "I");
+    InitVectorVar("p4_tight_muons", "LorentzVector");
+
+    // tight electrons
+    InitSingleVar("n_tight_electrons", "I");
+    InitVectorVar("p4_tight_electrons", "LorentzVector");
 }
 
 METAnalyzer::~METAnalyzer()
@@ -246,6 +258,14 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // get electron collection
     edm::Handle< std::vector< pat::Electron > > hLooseElectrons;
     iEvent.getByToken(EDMLooseElectronToken, hLooseElectrons);
+
+    // get muon collection
+    edm::Handle< std::vector< pat::Muon > > hTightMuons;
+    iEvent.getByToken(EDMTightMuonToken, hTightMuons);
+
+    // get electron collection
+    edm::Handle< std::vector< pat::Electron > > hTightElectrons;
+    iEvent.getByToken(EDMTightElectronToken, hTightElectrons);
 
     // get generator event info object to retrieve generator weight
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
@@ -334,6 +354,20 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillVectorVar("p4_loose_electrons", loose_electrons_p4);
     int n_loose_electrons = hLooseElectrons->size();
     FillSingleVar("n_loose_electrons", n_loose_electrons);
+
+    // tight muons
+    std::vector< ROOT::Math::XYZTVector > tight_muons_p4;
+    for (const pat::Muon& muon : *hTightMuons) { tight_muons_p4.push_back(muon.p4()); }
+    FillVectorVar("p4_tight_muons", tight_muons_p4);
+    int n_tight_muons = hTightMuons->size();
+    FillSingleVar("n_tight_muons", n_tight_muons);
+
+    // tight electrons
+    std::vector< ROOT::Math::XYZTVector > tight_electrons_p4;
+    for (const pat::Electron& electron : *hTightElectrons) { tight_electrons_p4.push_back(electron.p4()); }
+    FillVectorVar("p4_tight_electrons", tight_electrons_p4);
+    int n_tight_electrons = hTightElectrons->size();
+    FillSingleVar("n_tight_electrons", n_tight_electrons);
 
     // fill output tree
     tree->Fill();

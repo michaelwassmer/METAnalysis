@@ -154,6 +154,10 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = options.globalTag
 process.load("CondCore.CondDB.CondDB_cfi")
 
+####################### Object definitions ##########################
+
+process.load("METAnalysis.METAnalyzer.ObjectDefinitions_cfi")
+
 ####################### Event selection #############################
 
 process.load("METAnalysis.METAnalyzer.EventSelection_cfi")
@@ -259,34 +263,35 @@ process.content = cms.EDAnalyzer("EventContentAnalyzer")
 process.met = cms.Path()
 process.met *= process.METFilter
 #process.met *= process.HLTFilter
-#process.met *= process.TriggerFilter
-#process.met *= process.countLoosePatMuons
-#process.met *= process.countTightPatMuons
-#process.met *= process.countLoosePatElectrons
-#process.met *= process.countLoosePatPhotons
+process.met *= process.TriggerFilter
+process.met *= process.countLoosePatPhotons
+process.met *= process.countLoosePatMuons
+process.met *= process.countTightPatMuons
+process.met *= process.countLoosePatElectrons
+process.met *= process.countTightPatElectrons
 process.met *= process.METAnalyzer
 
 # muon task
-#process.muons = cms.Task()
-#process.muons.add(process.tightPatMuons)
-#process.muons.add(process.loosePatMuons)
+process.muons = cms.Task()
+process.muons.add(process.tightPatMuons)
+process.muons.add(process.loosePatMuons)
 
 # electron task
-#process.electrons = cms.Task()
-#process.electrons.add(process.loosePatElectrons)
-#process.electrons.add(process.tightPatElectrons)
+process.electrons = cms.Task()
+process.electrons.add(process.loosePatElectrons)
+process.electrons.add(process.tightPatElectrons)
 
 # photon task
-#process.photons = cms.Task()
-#process.photons.add(process.loosePatPhotons)
-#process.photons.add(process.tightPatPhotons)
+process.photons = cms.Task()
+process.photons.add(process.loosePatPhotons)
+process.photons.add(process.tightPatPhotons)
 
 # write the events which pass the skimming selection and only keep the specified file content
 #process.final = cms.EndPath(process.TFileService)
 
 # associate the patAlgosToolsTask to the Endpath for unscheduled mode
 process.met.associate(process.patAlgosToolsTask)
-#process.met.associate(process.muons)
-#process.met.associate(process.electrons)
-#process.met.associate(process.photons)
+process.met.associate(process.muons)
+process.met.associate(process.electrons)
+process.met.associate(process.photons)
 #print(process.dumpPython())
