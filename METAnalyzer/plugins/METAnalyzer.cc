@@ -32,6 +32,7 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -76,6 +77,7 @@ class METAnalyzer : public edm::one::EDAnalyzer< edm::one::SharedResources > {
     edm::EDGetTokenT< std::vector< pat::Electron > > EDMLooseElectronToken;  // Electron Collection
     edm::EDGetTokenT< std::vector< pat::Muon > >     EDMTightMuonToken;      // Muon Collection
     edm::EDGetTokenT< std::vector< pat::Electron > > EDMTightElectronToken;  // Electron Collection
+    edm::EDGetTokenT< std::vector< pat::Jet > >      EDMJetToken;            // Jet Collection
     edm::EDGetTokenT< std::vector< bool > >          filterDecisionsToken;
     edm::EDGetTokenT< std::vector< std::string > >   filterNamesToken;
 
@@ -147,6 +149,7 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     EDMLooseElectronToken{consumes< std::vector< pat::Electron > >(iConfig.getParameter< edm::InputTag >("loose_electrons"))},
     EDMTightMuonToken{consumes< std::vector< pat::Muon > >(iConfig.getParameter< edm::InputTag >("tight_muons"))},
     EDMTightElectronToken{consumes< std::vector< pat::Electron > >(iConfig.getParameter< edm::InputTag >("tight_electrons"))},
+    EDMJetToken{consumes< std::vector< pat::Jet > >(iConfig.getParameter< edm::InputTag >("jets"))},
     isData{iConfig.getParameter< bool >("isData")},
     era{iConfig.getParameter< std::string >("era")},
     sample_weight{iConfig.getParameter< double >("sample_weight")},
@@ -216,6 +219,10 @@ METAnalyzer::METAnalyzer(const edm::ParameterSet& iConfig) :
     // tight electrons
     InitSingleVar("n_tight_electrons", "I");
     InitVectorVar("p4_tight_electrons", "LorentzVector");
+
+    // jets
+    InitSingleVar("n_jets", "I");
+    InitVectorVar("p4_jets", "LorentzVector");
 }
 
 METAnalyzer::~METAnalyzer()
@@ -266,6 +273,10 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     // get electron collection
     edm::Handle< std::vector< pat::Electron > > hTightElectrons;
     iEvent.getByToken(EDMTightElectronToken, hTightElectrons);
+
+    // get jet collection
+    edm::Handle< std::vector< pat::Jet > > hJets;
+    iEvent.getByToken(EDMJetToken, hJets);
 
     // get generator event info object to retrieve generator weight
     edm::Handle< GenEventInfoProduct > hGenEventInfo;
@@ -368,6 +379,13 @@ void METAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     FillVectorVar("p4_tight_electrons", tight_electrons_p4);
     int n_tight_electrons = hTightElectrons->size();
     FillSingleVar("n_tight_electrons", n_tight_electrons);
+
+    // jets
+    std::vector< ROOT::Math::XYZTVector > jets_p4;
+    for (const pat::Jet& jet : *hJets) { jets_p4.push_back(jet.p4()); }
+    FillVectorVar("p4_jets", jets_p4);
+    int n_jets = hJets->size();
+    FillSingleVar("n_jets", n_jets);
 
     // fill output tree
     tree->Fill();

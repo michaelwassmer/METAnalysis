@@ -18,4 +18,5 @@ METAnalyzer = cms.EDAnalyzer(
     loose_electrons=cms.InputTag("loosePatElectrons"),
     tight_muons=cms.InputTag("tightPatMuons"),
     tight_electrons=cms.InputTag("tightPatElectrons"),
+    jets=cms.InputTag("finalJets")
 )

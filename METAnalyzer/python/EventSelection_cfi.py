@@ -36,6 +36,11 @@ countLoosePatPhotons = cms.EDFilter("PATCandViewCountFilter",
     src = cms.InputTag("loosePatPhotons")
 )
 
+countJets = cms.EDFilter("PATCandViewCountFilter",
+    minNumber = cms.uint32(1),
+    maxNumber = cms.uint32(999),
+    src = cms.InputTag("finalJets")
+)
 #import HLTrigger.HLTfilters.hltHighLevel_cfi as hlt
 #HLTFilter = hlt.hltHighLevel.clone(
 #    HLTPaths = ['HLT_IsoMu2*','HLT_PFMET*'],

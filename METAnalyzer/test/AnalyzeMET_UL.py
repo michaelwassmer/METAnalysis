@@ -157,6 +157,7 @@ process.load("CondCore.CondDB.CondDB_cfi")
 ####################### Object definitions ##########################
 
 process.load("METAnalysis.METAnalyzer.ObjectDefinitions_cfi")
+process.load("METAnalysis.METAnalyzer.Jets_cfi")
 
 ####################### Event selection #############################
 
@@ -264,6 +265,7 @@ process.met = cms.Path()
 process.met *= process.METFilter
 #process.met *= process.HLTFilter
 process.met *= process.TriggerFilter
+process.met *= process.countJets
 process.met *= process.countLoosePatPhotons
 process.met *= process.countLoosePatMuons
 process.met *= process.countTightPatMuons
@@ -294,4 +296,5 @@ process.met.associate(process.patAlgosToolsTask)
 process.met.associate(process.muons)
 process.met.associate(process.electrons)
 process.met.associate(process.photons)
+process.met.associate(process.jets)
 #print(process.dumpPython())
