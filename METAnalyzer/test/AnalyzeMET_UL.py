@@ -175,13 +175,6 @@ makePuppiesFromMiniAOD(process, False)
 runMetCorAndUncFromMiniAOD(
     process,
     isData=options.isData,
-    fixEE2017=True if "2017" in options.dataEra else False,
-    fixEE2017Params={
-        "userawPt": True,
-        "ptThreshold": 50.0,
-        "minEtaThreshold": 2.65,
-        "maxEtaThreshold": 3.139,
-    },
     campaign="UL",
     era=options.dataEra,
     postfix="PF",
